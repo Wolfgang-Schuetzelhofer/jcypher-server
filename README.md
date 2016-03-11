@@ -3,7 +3,7 @@ A server-side implementation of JCypher
 
 ## License & Copyright
 
-Copyright (c) 2014-2016 IoT-Solutions e.U.
+Copyright (c) 2016 IoT-Solutions e.U.
 
 License:
 								Apache License
