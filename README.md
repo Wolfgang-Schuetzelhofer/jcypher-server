@@ -1,5 +1,6 @@
-# jcypher-server
+# JCypher-server
 A server-side implementation of JCypher
+**Status: Pre-release development**
 
 ## License & Copyright
 
