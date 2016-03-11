@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JCypher-Server Browser</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <script src="jquery/jquery-1.12.0.js"></script>
+    <script src="bootstrap/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="jcypher_gview/style.css">
+    <link rel="stylesheet" type="text/css" href="jcypher_gview/overwrite.css">
+    <link rel="stylesheet" type="text/css" href="jcypher_gview/components/tree.css">
+    <link rel="stylesheet" type="text/css" href="jcypher_gview/components/ui_components.css">
+    <script src="jcypher_gview/util/domUtil.js"></script>
+    <script src="jcypher_gview/util/graphUtil.js"></script>
+    <script src="jcypher_gview/util/uiUtil.js"></script>
+    <script src="jcypher_gview/services/commandExecutor.js"></script>
+    <script src="jcypher_gview/models/domainGraph.js"></script>
+    <script src="jcypher_gview/services/jcypher_rest.js"></script>
+    <script src="jcypher_gview/components/domainTypeTree.js"></script>
+    <script src="jcypher_gview/components/templateUtil.js"></script>
+    <script src="jcypher_gview/components/listSelExpandUI.js"></script>
+    <script src="jcypher_gview/components/overlayDialog.js"></script>
+    <script src="jcypher_gview/components/typeDialog.js"></script>
+    <script src="jcypher_gview/components/graph_tools.js"></script>
+    <script src="jcypher_gview/jc_init.js"></script>
+    <script src="jcypher_gview/jc_main.js"></script>
+    <script src="jcypher_gview/jc_test.js"></script>
+</head>
+
+<body onload="JC_INIT.init();">
+    <!--body onload="initSample('graphPane_01')"-->
+    <div class="container-fluid">
+        <div class="row" style="padding-top: 1em; margin-bottom: 0.5em; border-bottom-width: 1px; border-bottom-style: solid;">
+            <div class="col-sm-4" style="text-align: center; margin-top: 1em">
+                <button class="btn btn-info" data-toggle="modal" data-target="#dlg-confirm" data-clk="JC_INIT.loadSampleData()"
+                        data-head="<b>Note:</b>" data-body="The selected database will be cleared and sample data will be loaded.<br/>Do you want to continue?">load sample data...</button>
+            </div>
+            <div class="col-sm-4" style="text-align: center"><img alt="" src="img/jcypher_server_logo.png" style="height: 4em;" />
+            </div>
+            <div class="col-sm-4" style="text-align: center">
+                <a href="http://www.iot-solutions.net/" target="_blank">
+                    <span class="jc_by_iot">by&nbsp;</span>
+                    <img alt="" src="img/l1_xhdpi.png" style="height: 5em;" />
+                </a>
+            </div>
+        </div>
+        <table id="main-table" class="gvis-main-table">
+            <col/>
+            <col/>
+            <col/>
+            <tr>
+                <td id="jc-main-left" class="jcvis-td-left" valign="top">
+                    <div id="jcvis-graphDBs"></div>
+                    <div id="jcvis-dmodel"></div>
+                    <div class="test-only">
+                        <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#jcvis-test">Test</button>
+                        <div id="jcvis-test" class="collapse in">
+                            <input id="test_button_all" class="btn" type="button" value="test all" onclick="testAll()" disabled></input>
+                            <br/>
+                            <br/>
+                            <input id="test_button_person" class="btn" type="button" value="test Person" onclick="testPerson()" disabled></input>
+                            <br/>
+                            <br/>
+                            <input id="test_button_test" class="btn" type="button" value="test" onclick="test()" disabled></input>
+                        </div>
+                    </div>
+                </td>
+                <td class="jcvis-td-main" valign="top">
+                    <ul class="nav nav-tabs" id="jcvis-nav-tabs" onclick="JC_UI_UTIL.tabClicked(event)">
+                        <li>
+                            <a style="visibility: hidden" data-toggle="tab" href="#graph_view">_<span class="glyphicon glyphicon-remove jcvis-tab-close-inact"></span>
+                                </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="graph_panel">
+                            <div id="graph_tools" class="graph-tools">
+                                <span class="glyphicon glyphicon-remove gt-clear" onclick="JC_GRAPH_TOOLS.clearLayout(event)" title="clear layout"></span>
+                                <span class="glyphicon glyphicon-open gt-reload" onclick="JC_GRAPH_TOOLS.reloadLayout(event)" title="restore layout"></span>
+                                <span class="glyphicon glyphicon-save gt-save" onclick="JC_GRAPH_TOOLS.saveLayout(event)" title="save layout"></span>
+                                <span class="glyphicon glyphicon-resize-full gt-toggle-screen" onclick="JC_GRAPH_TOOLS.toggleScreen(event)" title="toggle fullscreen"></span>
+                            </div>
+                            <div id="graph_view" class="tab-pane fade in active graph_view" />
+                        </div>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Dialog Box(es) -->
+    <div class="modal fade" id="dlg-confirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"></div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                    <button class="btn btn-success btn-ok" data-dismiss="modal">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="ListSelExpandUI">
+        <fieldset class="jcvis-fs">
+            <legend class="jcvis-fs"></legend>
+            <div class="dropdown well well-sm p-select">
+                <div class="jcvis-width-1 dlg-click" data-toggle="dropdown">
+                    <span></span>
+                    <span class="glyphicon glyphicon-triangle-bottom dlg-butIco"></span>
+                </div>
+                <ul class="dropdown-menu">
+                </ul>
+            </div>
+            <div class="p-additions" style="display: none">Additions</div>
+            <div data-toggle="collapse" class="well well-sm p-explore-t dlg-click"><span>explore</span><span class="glyphicon glyphicon-folder-close dlg-butIco"></span>
+            </div>
+            <div class="collapse p-explore-c">
+            </div>
+        </fieldset>
+    </template>
+
+    <template id="ShowGraph">
+        <div class="well well-sm dlg-click">
+            <span>show graph</span><span class="glyphicon glyphicon-star dlg-butIco"></span>
+        </div>
+    </template>
+
+    <template id="OverlayDialog">
+        <div class="dlg-dialog">
+            <div class="dlg-head">
+                <img src="" class="dlg-head-img"></img>
+                <span class="dlg-head-txt">Head</span>
+                <span class="glyphicon glyphicon-remove dlg-close"></span>
+            </div>
+            <div class="dlg-body">
+            </div>
+        </div>
+    </template>
+
+    <template id="TypeBody">
+        <ul class="list-group dlg-compartments">
+            <li class="list-group-item dlg-extends">
+                <div class="dlg-compartment-head">Extends</div>
+                <span class="dlg-extends-content"></span>
+            </li>
+            <li class="list-group-item dlg-implements">
+                <div class="dlg-compartment-head">Implements</div>
+                <span class="dlg-implements-content"></span>
+            </li>
+            <li class="list-group-item dlg-fields">
+                <div class="dlg-compartment-head">Fields</div>
+                <table>
+                    <tr class="dlg-fields-content"></tr>
+                </table>
+            </li>
+            <li class="list-group-item dlg-values">
+                <span class="dlg-values-content"></span>
+            </li>
+        </ul>
+    </template>
+
+    <template id="TField">
+        <tr>
+            <td class="dlg-fieldname-td"><span class="dlg-field-name"></span>
+            </td>
+            <td><span class="dlg-field-type"></span>
+            </td>
+        </tr>
+    </template>
+
+</body>
+
+</html>

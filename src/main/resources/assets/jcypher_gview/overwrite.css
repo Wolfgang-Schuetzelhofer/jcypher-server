@@ -1,0 +1,25 @@
+.nav-tabs > li > a {
+    border: 1px solid #bbb;
+    border-radius: 4px 12px 0 0;
+}
+
+li.active > a:focus {
+    background-color: #fff;
+    border: 1px solid #999;
+}
+
+.nav > li.active > a:hover {
+    background-color: #fff;
+    border-color: #bbb;
+    border-width: 2px 1px 0 1px;
+}
+
+.nav > li > a {
+    padding: 5px 15px;
+}
+
+.nav > li > a:hover {
+    border-width: 2px 1px 0 1px;
+    border-color: #bbb;
+    background-color: transparent;
+}

@@ -1,0 +1,141 @@
+.test-only {
+    display: none;
+}
+body {
+    margin: 0;
+    color: #000;
+    background: #D5E6E8 url(../jcypher_gview/bg.png);
+    height: 100%;
+    -webkit-transform: translateX(0);
+    -webkit-transform: translate3d(0, 0, 0);
+    font-family: arial, helvetica, sans-serif;
+}
+
+.jc_by_iot {
+    font-size: 2em;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+.jcvis-btn {
+    float: right;
+    width: 8em;
+    background: #3498db;
+    background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+    background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+    background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+    background-image: -o-linear-gradient(top, #3498db, #2980b9);
+    background-image: linear-gradient(to bottom, #3498db, #2980b9);
+    -webkit-border-radius: 0.5em;
+    -moz-border-radius: 0.5em;
+    border-radius: 0.5em;
+    font-family: Arial;
+    color: #ffffff;
+    font-size: 1em;
+    padding: 0.3em 0.6em 0.3em 0.6em;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: #3cb0fd;
+    background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+    background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+    background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+    background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+    background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+    text-decoration: none;
+}
+
+.btn:disabled {
+    background: #dddddd;
+}
+
+.gvis-neo-frame {
+    display: none;
+    
+    /*display: inline;*/
+    width: 100%;
+    height: 60em;
+}
+
+.jcvis-td-left {
+    width: 17em;
+}
+
+.graph_view {
+    overflow: hidden;
+    height: 45em;
+    /*
+    background-color: rgba(255, 255, 255, 0.5);
+    -webkit-border-radius: 0.5em;
+    -moz-border-radius: 0.5em;
+    border-radius: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    border-style: groove;
+    border-width: 3px;
+    */
+}
+
+.jcvis-td-main {
+    width: 80%;
+    padding-left: 1em;
+}
+
+.gvis-main-table {
+    width: 100%;
+}
+
+.jcvis-tab-close-inact {
+    cursor: pointer;
+    color: darkgray;
+    vertical-align: super;
+    margin-left: 1em;
+}
+
+.jcvis-tab-close-act {
+    cursor: pointer;
+    color: red;
+    vertical-align: super;
+    margin-left: 1em;
+}
+
+fieldset.jcvis-fs {
+    border: 1px groove #ddd !important;
+    padding: 0 1.4em 1.4em 1.4em !important;
+    margin: 0 0 1.5em 0 !important;
+    -webkit-box-shadow: 0px 0px 0px 0px #000;
+    box-shadow: 0px 0px 0px 0px #000;
+}
+
+legend.jcvis-fs {
+    font-size: 1em !important;
+    font-weight: bold !important;
+    text-align: left !important;
+    width: auto;
+    padding: 0 10px;
+    border-bottom: none;
+}
+.jcvis-width-1 {
+    width: 100%;
+}
+.jcvis-clickable {
+    cursor: pointer;
+    padding-left: 3px;
+}
+.jcvis-fs .well {
+    /*padding: 3px;*/
+    margin-bottom: 0px;
+    border-color: #999;
+}
+
+#graph_panel {
+    background-color: rgba(255, 255, 255, 0.5);
+    top: 0;
+    left: 0;
+    width: 100%;
+}

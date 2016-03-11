@@ -1,0 +1,126 @@
+.dlg-dialog {
+    position: absolute;
+    top: 20em;
+    left: 40em;
+    z-index: 10;
+}
+.dlg-head {
+    color: black;
+    cursor: move;
+    background-color: #c1ccd4;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+    border-radius: 4px 2em 0 0;
+    width: 100%;
+    padding-bottom: .5em;
+}
+
+.dlg-body {
+    box-shadow: 5px 10px 5px rgba(0, 0, 0, .3);
+}
+
+.dlg-close {
+    cursor: pointer;
+    color: red;
+    vertical-align: super;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: .2em;
+    float: right;
+}
+
+.dlg-compartment-head {
+    font-size: smaller;
+    padding-left: .5em;
+}
+
+.dlg-compartments > li {
+    padding-left: 0px;
+    padding-top: 0px;
+}
+
+.dlg-field-type {
+    padding-left: .5em;
+}
+
+.dlg-fieldname-td {
+    text-align: right;
+    padding-left: 1em;
+}
+
+.dlg-values-content {
+    padding-left: .5em;
+}
+.dlg-implements-content, .dlg-extends-content {
+    padding-left: 1em;
+}
+
+.dlg-head-txt {
+    padding-left: .2em;
+    vertical-align: sub;
+}
+
+.dlg-head-img {
+    vertical-align: top;
+    padding-top: .3em;
+}
+
+.dlg-body .list-group-item {
+    background-color: #303c38;
+    color: white;
+}
+
+.dlg-link {
+    color: #efb775;
+    cursor: pointer;
+}
+.dlg-click {
+    cursor: pointer;
+}
+.graph-tools {
+    display: none;
+    background-color: white;
+    border-style: solid;
+    border-color: #999;
+    border-width: 1px;
+    border-bottom-width: 0px;
+    padding: 5px 2em 8px 5px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+}
+.gt-save, .gt-reload, .gt-clear, .gt-toggle-screen {
+    color: green;
+    font-size: 22px;
+    cursor: pointer;
+    padding-right: 0.5em;
+}
+.gt-disabled {
+    color: #8e98a0;
+}
+
+.gt-toggle-screen {
+    padding-left: 1em;
+}
+
+.dlg-butIco {
+    float: right;
+    padding-right: 1em;
+}
+
+.dropdown-menu {
+    padding: 0;
+    margin-top: 0;
+}
+
+.jcvis-fs ul.dropdown-menu > li:hover {
+    background:#eee;
+}
+.jcvis-fs ul.dropdown-menu > li {
+    background:#fbfbfb;
+}
+#jcvis-graphDBs-expnd > ul > li {
+    background:#fbfbfb;
+}

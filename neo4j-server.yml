@@ -1,0 +1,11 @@
+neo4jConnections:
+# name is case insensitive
+   - name: db-0
+     url: http://localhost:7474
+   - name: db-1
+     url: http://localhost:7475
+     userId: userId
+     password: password
+
+#optional
+prettyJSON: true
