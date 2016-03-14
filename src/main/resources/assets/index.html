@@ -34,8 +34,7 @@
     <div class="container-fluid">
         <div class="row" style="padding-top: 1em; margin-bottom: 0.5em; border-bottom-width: 1px; border-bottom-style: solid;">
             <div class="col-sm-4" style="text-align: center; margin-top: 1em">
-                <button class="btn btn-info" data-toggle="modal" data-target="#dlg-confirm" data-clk="JC_INIT.loadSampleData()"
-                        data-head="<b>Note:</b>" data-body="The selected database will be cleared and sample data will be loaded.<br/>Do you want to continue?">load sample data...</button>
+                <button class="btn btn-info" data-toggle="modal" data-target="#dlg-confirm" data-clk="JC_INIT.loadSampleData()" data-head="<b>Note:</b>" data-body="The selected database will be cleared and sample data will be loaded.<br/>Do you want to continue?">load sample data...</button>
             </div>
             <div class="col-sm-4" style="text-align: center"><img alt="" src="img/jcypher_server_logo.png" style="height: 4em;" />
             </div>
@@ -103,6 +102,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Glasspane -->
+    <div id="dlg-glasspane">
+        <img id="dlg-gp-img" src="img/load.gif"/>
     </div>
 
     <!-- Templates -->

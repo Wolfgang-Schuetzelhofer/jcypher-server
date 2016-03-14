@@ -67,6 +67,7 @@
 
         this.setGraphDB = function (db) {
             if (db != dbName) {
+                JC_UI_UTIL.showGlassPane();
                 dbName = db;
                 domainModel = null;
                 domainGraph = null;
@@ -88,6 +89,7 @@
                         gv.appendChild(iframe);
                     }).error(function () {
                         alert('Error connecting to db: ' + dbName);
+                        JC_UI_UTIL.hideGlassPane();
                     });
                 });
             }

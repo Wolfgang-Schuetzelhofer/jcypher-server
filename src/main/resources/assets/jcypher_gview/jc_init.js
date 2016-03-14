@@ -38,6 +38,7 @@
         }
 
         this.init = function () {
+            JC_UI_UTIL.showGlassPane();
             if (TEST_MODE) {
                 var to = $(document.body).find(".test-only");
                 for (var i = 0; i < to.length; i++) {
@@ -150,6 +151,7 @@
             });
             // intercept layout
             var jcForce = new JC_GRAPH_UTIL.jc_layoutForce();
+            JC_UI_UTIL.hideGlassPane();
         }
 
         //private mathods

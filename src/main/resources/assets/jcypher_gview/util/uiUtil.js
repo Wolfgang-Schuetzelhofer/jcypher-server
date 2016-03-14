@@ -16,8 +16,38 @@
 
 ! function () {
     var uiUtil = function () {
+        
+        // private vars
+        var hideGP = true;
 
         // public methods
+        this.showGlassPane = function () {
+            var gp = document.getElementById("dlg-glasspane");
+            if (gp.style.display != "block") {
+                hideGP = false;
+                var h = $(window).height();
+                var w = $(window).width();
+                gp.style.height = h + "px";
+                gp.style.width = w + "px";
+                gp.style.display = "block";
+                var worker = new Worker("jcypher_gview/worker.js");
+                worker.onmessage = function (e) {
+                    JC_UI_UTIL.hideGlassPane();
+                };
+                worker.postMessage(2000);
+            }
+        }
+        
+        this.hideGlassPane = function () {
+            var gp = document.getElementById("dlg-glasspane");
+            if (gp.style.display != "none") {
+                if (hideGP)
+                    gp.style.display = "none";
+                else
+                    hideGP = true;
+            }
+        }
+
         this.findTab = function (name) {
             var navTabs = document.getElementById("jcvis-nav-tabs");
             for (var i = 0; i < navTabs.children.length; i++) {
@@ -63,12 +93,12 @@
                 span.setAttribute("class", cls);
             }
         }
-        
-        this.closeTab = function(tab) {
+
+        this.closeTab = function (tab) {
             var cl = $(tab).children("a").children("*")[0];
             cl.click();
         }
-        
+
         this.tabClicked = function (event) {
             //alert("tab clicked");
             var par = event.target.parentNode;
