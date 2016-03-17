@@ -16,11 +16,19 @@
 
 ! function () {
     var uiUtil = function () {
-        
+
         // private vars
         var hideGP = true;
 
         // public methods
+        this.alert = function (headTxt, bodyTxt, type = -1) {
+            var btn = document.getElementById("dlg-alert");
+            $(btn).attr("data-head", headTxt);
+            $(btn).attr("data-body", bodyTxt);
+            $(btn).attr("data-type", type);
+            btn.click();
+        }
+
         this.showGlassPane = function () {
             var gp = document.getElementById("dlg-glasspane");
             if (gp.style.display != "block") {
@@ -37,7 +45,7 @@
                 worker.postMessage(2000);
             }
         }
-        
+
         this.hideGlassPane = function () {
             var gp = document.getElementById("dlg-glasspane");
             if (gp.style.display != "none") {
@@ -46,6 +54,20 @@
                 else
                     hideGP = true;
             }
+        }
+
+        this.sizeModal = function () {
+            var worker = new Worker("jcypher_gview/worker.js");
+            worker.onmessage = function (e) {
+                var mbd = $(document.body).children(".modal-backdrop")[0];
+                if (mbd != null) {
+                    mbd.style.height = $(window).height() + "px";
+                    mbd.style.width = $(window).width() + "px";
+                } else {
+                    JC_UI_UTIL.sizeModal();
+                }
+            };
+            worker.postMessage(20);
         }
 
         this.findTab = function (name) {

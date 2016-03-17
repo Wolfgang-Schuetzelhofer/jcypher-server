@@ -48,13 +48,37 @@
 
             $('#dlg-confirm').on('show.bs.modal', function (e) {
                 $(this).focus(function () {
-                    $(this).find('.btn-ok').focus();
+                    $(this).find('.dlg-btn-ok').focus();
                 });
+                var typ = $(e.relatedTarget).data('type');
+                var icoSpan = $(this).find('.modal-header').children("span").eq(0);
+                if (typ == 0)
+                    icoSpan.attr("class", "dlg-ico dlg-ico-info");
+                else if (typ == 1)
+                    icoSpan.attr("class", "dlg-ico dlg-ico-warn");
+                else if (typ == 2)
+                    icoSpan.attr("class", "dlg-ico dlg-ico-err");
+                else
+                    icoSpan.removeAttr("class");
                 var clk = $(e.relatedTarget).data('clk');
-                $(this).find('.modal-header').html($(e.relatedTarget).data('head'));
+                var txtOk = $(e.relatedTarget).data('ok');
+                var txtCanc = $(e.relatedTarget).data('cancel');
+                $(this).find('.modal-header').children("span").eq(1).html($(e.relatedTarget).data('head'));
                 $(this).find('.modal-body').html($(e.relatedTarget).data('body'));
-                $(this).find('.btn-ok').attr('onclick', clk);
-                return;
+                var ok = $(this).find('.dlg-btn-ok');
+                var canc = $(this).find('.dlg-btn-cancel')[0];
+                if (clk != null)
+                    ok.attr('onclick', clk);
+                else
+                    ok.removeAttr('onclick');
+                ok = ok[0];
+                ok.textContent = txtOk;
+                if (txtCanc != null) {
+                    canc.textContent = txtCanc;
+                    canc.style.display = "inline-block";
+                } else
+                    canc.style.display = "none";
+                JC_UI_UTIL.sizeModal();
             })
 
             JC_ListSelExpandUI.create("Graph Database(s)", "jcvis-graphDBs", function (list) {

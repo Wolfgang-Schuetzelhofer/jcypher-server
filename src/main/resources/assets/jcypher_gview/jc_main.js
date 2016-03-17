@@ -88,8 +88,9 @@
                         iframe.setAttribute("src", "/browser");
                         gv.appendChild(iframe);
                     }).error(function () {
-                        alert('Error connecting to db: ' + dbName);
+                        //alert('Error connecting to db: ' + dbName);
                         JC_UI_UTIL.hideGlassPane();
+                        JC_UI_UTIL.alert("<b>Error</b>", 'Connecting to database: <b>' + dbName + '</b>', 2);
                     });
                 });
             }

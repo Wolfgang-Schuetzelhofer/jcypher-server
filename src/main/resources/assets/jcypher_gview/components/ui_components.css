@@ -133,9 +133,29 @@
     left: 0;
     opacity: 0.5;
 }
-
 #dlg-gp-img {
     position: absolute;
     top: 40%;
     left: 50%;
+}
+.dlg-ico {
+    background-size: 30px 30px;
+    padding-left: 30px;
+    padding-right: 1em;
+    padding-top: 5px;
+    padding-bottom: 10px;
+    background-repeat: no-repeat;
+}
+.dlg-ico-info {
+    background-image: url("../../img/info.png");
+}
+.dlg-ico-warn {
+    background-image: url("../../img/warning.png");
+}
+.dlg-ico-err {
+    background-image: url("../../img/error.png");
+}
+.modal-backdrop {
+    top: 0;
+    bottom: 0;
 }
