@@ -46,6 +46,7 @@
                 }
             }
 
+            // init modal dialog boxes
             $('#dlg-confirm').on('show.bs.modal', function (e) {
                 $(this).focus(function () {
                     $(this).find('.dlg-btn-ok').focus();
@@ -169,6 +170,14 @@
             document.getElementById("test_button_test").disabled = false;
             JC_MAIN.INIT_DELETE = false;
             JC_MAIN.INIT_INTERCEPTS = false;
+            (function (open) {
+                cw.XMLHttpRequest.prototype.open = function () {
+                    open.apply(this, arguments);
+                    var db = JC_MAIN.getDBName();
+                    if (db != null)
+                        this.setRequestHeader("jc_db", db);
+                };
+            })(cw.XMLHttpRequest.prototype.open);
             JC_REST.loadDomains(JC_MAIN.getDBName(), function (data) {
                 var ui = JC_ListSelExpandUI.getListSelExpandUI("jcvis-dmodel");
                 ui.setModelList(data);

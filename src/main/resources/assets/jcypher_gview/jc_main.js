@@ -75,23 +75,20 @@
                 var gv = document.getElementById("graph_view");
                 JC_INIT.clearDomainViews();
                 $(gv).empty();
-                // activate graph db
-                JC_REST.setActiveDB(dbName, function (data) {
-                    // test if we can connect to the neo db
-                    $.get("/browser", function () {
-                        var iframe = document.createElement('iframe');
-                        iframe.onload = function (dat) {
-                            JC_INIT.initNeo();
-                        }; // before setting 'src'
-                        iframe.setAttribute("class", "gvis-neo-frame");
-                        iframe.setAttribute("id", "neoframe");
-                        iframe.setAttribute("src", "/browser");
-                        gv.appendChild(iframe);
-                    }).error(function () {
-                        //alert('Error connecting to db: ' + dbName);
-                        JC_UI_UTIL.hideGlassPane();
-                        JC_UI_UTIL.alert("<b>Error</b>", 'Connecting to database: <b>' + dbName + '</b>', 2);
-                    });
+                // test if we can connect to the neo db
+                $.get("/browser", function () {
+                    var iframe = document.createElement('iframe');
+                    iframe.onload = function (dat) {
+                        JC_INIT.initNeo();
+                    }; // before setting 'src'
+                    iframe.setAttribute("class", "gvis-neo-frame");
+                    iframe.setAttribute("id", "neoframe");
+                    iframe.setAttribute("src", "/browser/jc__db/" + dbName);
+                    gv.appendChild(iframe);
+                }).error(function () {
+                    //alert('Error connecting to db: ' + dbName);
+                    JC_UI_UTIL.hideGlassPane();
+                    JC_UI_UTIL.alert("<b>Error</b>", 'Connecting to database: <b>' + dbName + '</b>', 2);
                 });
             }
         }

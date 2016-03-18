@@ -16,8 +16,7 @@
 
 package iot.jcypher.server;
 
-import java.util.Collection;
-
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,6 +33,8 @@ public class JcProxyServlet extends ProxyServlet {
 	private static final String HOST_SEP = "/";
 	private static final String REFERER = "Referer";
 	private static final String LOCATION = "Location";
+	private static final String DB_MARK = "/jc__db/";
+	private static final String LAST_ACTIVE = "jc_last_active";
 	
 	private Neo4jConfig neo4jConfig;
 
@@ -44,19 +45,31 @@ public class JcProxyServlet extends ProxyServlet {
 
 	@Override
 	protected String rewriteTarget(HttpServletRequest clientRequest) {
-		StringBuffer target = clientRequest.getRequestURL();
+		String target = clientRequest.getRequestURL().toString();
 		int protIdx = target.indexOf(PROT_SEP);
 		int hostIdx = target.indexOf(HOST_SEP, protIdx + PROT_SEP.length());
-		if (hostIdx >= 0) {
-			StringBuilder sb = new StringBuilder(this.neo4jConfig.getActiveConnection().getUrl());
-			sb.append(target.substring(hostIdx));
-			target = new StringBuffer(sb.toString());
-		} else
-			target = new StringBuffer(this.neo4jConfig.getActiveConnection().getUrl());
+		String db = clientRequest.getHeader("jc_db");
+		String url = null;
+		if (db == null || db.trim().length() == 0) {
+			int dbIdx = target.indexOf(DB_MARK);
+			if (dbIdx > 0) {
+				db = target.substring(dbIdx + DB_MARK.length());
+				target = target.substring(0, dbIdx);
+			}
+		}
+		ServletContext ctxt = clientRequest.getServletContext();
+		if (db != null)
+			ctxt.setAttribute(LAST_ACTIVE, db);
+		else
+			db = ctxt.getAttribute(LAST_ACTIVE).toString();
+		url = this.neo4jConfig.getDBAccess(db).getUrl();
+		StringBuilder trgt = new StringBuilder(url);
+		if (hostIdx >= 0)
+			trgt.append(target.substring(hostIdx));
         String query = clientRequest.getQueryString();
         if (query != null)
-            target.append("?").append(query);
-        return target.toString();
+            trgt.append("?").append(query);
+        return trgt.toString();
 	}
 
 	@Override

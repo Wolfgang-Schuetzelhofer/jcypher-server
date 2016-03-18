@@ -22,7 +22,6 @@ public class Neo4jDBInfo {
 
 	private String name;
 	private String url;
-	private boolean active = false;
 	
 	@JsonProperty
 	public String getName() {
@@ -42,16 +41,6 @@ public class Neo4jDBInfo {
 	@JsonProperty
 	public void setUrl(String url) {
 		this.url = url;
-	}
-
-	@JsonProperty
-	public boolean isActive() {
-		return active;
-	}
-
-	@JsonProperty
-	public void setActive(boolean active) {
-		this.active = active;
 	}
 	
 }

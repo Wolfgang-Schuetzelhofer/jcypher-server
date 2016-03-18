@@ -19,7 +19,6 @@ package iot.jcypher.server.resources;
 import java.util.List;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -28,7 +27,6 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 
-import iot.jcypher.server.config.DBAccessConfig;
 import iot.jcypher.server.config.Neo4jConfig;
 
 @Path("/{dbId}")
@@ -40,17 +38,6 @@ public class Neo4jActiveDB {
 	public Neo4jActiveDB(Neo4jConfig neo4jConfig) {
 		super();
 		this.neo4jConfig = neo4jConfig;
-	}
-	
-	@POST
-    @Timed
-	public String selectDB(@PathParam("dbId") String dbId) throws Exception {
-		DBAccessConfig dba = this.neo4jConfig.getDBAccess(dbId);
-		if (dba == null)
-			throw new WebApplicationException("database connection: " + dbId + " not configured");
-		dba.clearDomainCache();
-		this.neo4jConfig.setActiveConnection(dba);
-		return "{ \"activeDB\":\"" + dbId + "\"}";
 	}
 	
 	/**

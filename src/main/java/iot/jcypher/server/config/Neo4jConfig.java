@@ -26,7 +26,6 @@ import iot.jcypher.server.resources.Neo4jDBInfo;
 public class Neo4jConfig {
 
 	private List<DBAccessConfig> neo4jConnections = new ArrayList<DBAccessConfig>();
-	private DBAccessConfig activeConnection;
 	private boolean prettyJSON = false;
 
 	@JsonProperty("neo4jConnections")
@@ -49,16 +48,6 @@ public class Neo4jConfig {
 		this.prettyJSON = prettyJSON;
 	}
 
-	public DBAccessConfig getActiveConnection() {
-		if (this.activeConnection == null && !this.neo4jConnections.isEmpty())
-			this.activeConnection = this.neo4jConnections.get(0);
-		return activeConnection;
-	}
-
-	public void setActiveConnection(DBAccessConfig activeConnection) {
-		this.activeConnection = activeConnection;
-	}
-
 	/**
 	 * database id is case insensitive
 	 * @param dbId
@@ -76,8 +65,6 @@ public class Neo4jConfig {
 		List<Neo4jDBInfo> ret = new ArrayList<Neo4jDBInfo>();
 		for (DBAccessConfig ac : this.neo4jConnections) {
 			Neo4jDBInfo dbi = ac.getDBInfo();
-			if (ac.equals(getActiveConnection()))
-				dbi.setActive(true);
 			ret.add(dbi);
 		}
 		return ret;
