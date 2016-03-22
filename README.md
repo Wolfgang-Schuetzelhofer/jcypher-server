@@ -1,7 +1,7 @@
 ![](https://github.com/Wolfgang-Schuetzelhofer/jcypher-server/blob/master/src/test/resources/img/jcypher_server_logo_1.png)
 =======
 # JCypher-Server
-A server-side implementation of JCypher
+A server-side implementation of [**JCypher**](http://wolfgang-schuetzelhofer.github.io/jcypher/)  
 **Status: Pre-release development**
 
 ## License & Copyright
