@@ -1,4 +1,4 @@
-![](https://github.com/Wolfgang-Schuetzelhofer/jcypher-server/blob/master/src/main/resources/assets/img/jcypher_server_logo.png)
+![](https://github.com/Wolfgang-Schuetzelhofer/jcypher-server/blob/master/src/test/resources/img/jcypher_server_logo_1.png)
 =======
 # JCypher-Server
 A server-side implementation of JCypher
