@@ -1,12 +1,12 @@
 /************************************************************************
  * Copyright (c) 2016 IoT-Solutions e.U.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,10 +22,10 @@
             var overlayDialogs = {};
 
             //public
-            this.create = function (dlgId, pos) {
+            this.create = function (dlgId, pos, dlgType) {
                 overlayDialogs[dlgId] = new component(dlgId, function (olDlgId) {
                     overlayDialogs[olDlgId] = null;
-                });
+                }, dlgType);
                 if (pos != null) {
                     var elem = overlayDialogs[dlgId].getDialogElement();
                     elem.style.left = pos.x + "px";
@@ -38,10 +38,20 @@
                 return overlayDialogs[dlgId];
             }
 
+            this.closeDialogsOfType = function (dlgType) {
+                Object.keys(overlayDialogs).forEach(function (key, index) {
+                    var dlg = overlayDialogs[key];
+                    if (dlg != null && dlg.getDialogType() == dlgType) {
+                        dlg.closeDlg();
+                    }
+                });
+            }
+
             //private
             // object constructor
-            var component = function (dlgId, closeFunc) {
+            var component = function (dlgId, closeFunc, type) {
                 var dialogId = dlgId;
+                var dialogType = type;
                 var closeFunction = closeFunc;
                 var dialog = JC_TemplateUtil.loadTemplate("OverlayDialog");
                 if (dialog != null) {
@@ -81,6 +91,16 @@
                 //public
                 this.getDialogElement = function () {
                     return dialog;
+                }
+
+                this.getDialogType = function () {
+                    return dialogType;
+                }
+
+                this.closeDlg = function () {
+                    dialog.parentNode.removeChild(dialog);
+                    if (closeFunction != null)
+                        closeFunction(dialogId);
                 }
             }
         }

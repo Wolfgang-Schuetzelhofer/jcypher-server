@@ -74,6 +74,7 @@
                 domainName = null;
                 var gv = document.getElementById("graph_view");
                 JC_INIT.clearDomainViews();
+                JC_OverlayDialog.closeDialogsOfType("typeDialog");
                 $(gv).empty();
                 // test if we can connect to the neo db
                 $.get("/browser", function () {
