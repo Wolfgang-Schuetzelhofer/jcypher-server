@@ -32,16 +32,59 @@ import iot.jcypher.server.resources.DomainModel;
 import iot.jcypher.server.resources.Domains;
 
 public class JCypherServerApplication extends Application<JCypherServerConfig> {
+	
+	private static final String dw_config = "jcypher-server.yml";
+	private static final String neo_config = "neo4j-server.yml";
+	
+	private String configDir;
+
+	public JCypherServerApplication(String configDir) {
+		super();
+		this.configDir = configDir;
+	}
 
 	public static void main(String[] args) throws Exception {
-		new JCypherServerApplication().run(args);
+		String cfg = null;
+		String[] arguments = new String[2];
+		arguments[0] = "server";
+		boolean err = true;
+		if (args != null) {
+			if (args.length == 1) {
+				if (args[0].startsWith("-cfgdir")) {
+					int idx = args[0].indexOf('=');
+					if (idx > 0) {
+						err = false;
+						cfg = args[0].substring(idx + 1, args[0].length()).trim();
+						if (cfg.length() > 0 && cfg.indexOf('/') != cfg.length() - 1)
+							cfg = cfg.concat("/");
+					}
+				}
+			} else if (args.length == 0)
+				err = false;
+		} else
+			err = false;
+		
+		if (!err) {
+			if (cfg != null)
+				arguments[1] = cfg.concat(dw_config);
+			else
+				arguments[1] = dw_config;
+			new JCypherServerApplication(cfg).run(arguments);
+		} else {
+			System.out.println("commandline parameters: [-cfgdir=a-dir-containing-config-files]");
+			System.out.println("required config files: jcypher-server.yml, neo4j-server.yml");
+			System.exit(1);
+		}
 	}
 
 	@Override
 	public void run(JCypherServerConfig cfg, Environment env) throws Exception {
-		System.out.println("-------------------------- run --------------");
-		
-		Neo4jConfig neocfg = new ConfigReader().readConfiguration(Neo4jConfig.class, "neo4j-server.yml");
+		String neocfgloc;
+		if (this.configDir != null)
+			neocfgloc = this.configDir.concat(neo_config);
+		else
+			neocfgloc = neo_config;
+		Neo4jConfig neocfg = new ConfigReader().readConfiguration(Neo4jConfig.class, neocfgloc);
 		
 		ServerFactory fact = cfg.getServerFactory();
 		((DefaultServerFactory)fact).setJerseyRootPath("/jcypher-api/*");

@@ -16,21 +16,7 @@
 
 package iot.jcypher.server;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.dropwizard.Configuration;
 
 public class JCypherServerConfig extends Configuration {
-
-	private String neo4jdbURL;
-
-	@JsonProperty
-	public String getNeo4jdbURL() {
-		return neo4jdbURL;
-	}
-
-	@JsonProperty
-	public void setNeo4jdbURL(String neo4jdbURL) {
-		this.neo4jdbURL = neo4jdbURL;
-	}
 }
