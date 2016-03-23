@@ -2,7 +2,8 @@
 =======
 # JCypher-Server
 A server-side implementation of [**JCypher**](http://wolfgang-schuetzelhofer.github.io/jcypher/)  
-**Status: Pre-release development**
+**Status: Pre-release development**  
+**A first pre-release will be published in April 2016**
 
 ## License & Copyright
 
