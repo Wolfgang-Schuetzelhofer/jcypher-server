@@ -181,9 +181,11 @@
             for (i = 0; i < cypherres.length; i++) {
                 if (cypherres[i].jcviewTab == null) { // now that's the new one
                     var legend = getDecendentWithAttribute(cypherres[i], "ng-controller", "LegendCtrl");
-                    var lnks = $(legend).children("div").eq(1)[0];
-                    if (lnks != null) {
-                        lnks.style.display = "none";
+                    var lnks = $(legend).children("div").eq(1);
+                    if (lnks.length > 0) {
+                        lnks[0].style.display = "none";
+                        var stat_bar = $(legend.parentNode).children(".status-bar")[0];
+                        stat_bar.style.display = "none";
                         done = true;
                     }
                     if (done) {
