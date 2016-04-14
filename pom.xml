@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.iot-solutions.graphdb</groupId>
 	<artifactId>jcypher-server</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 
 	<properties>
 		<dropwizard.version>0.9.2</dropwizard.version>

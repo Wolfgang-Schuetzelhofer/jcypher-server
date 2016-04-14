@@ -55,6 +55,8 @@
                     var txt = spl[spl.length - 1];
                     var headText = $(dlgElem).find(".dlg-head-txt")[0];
                     headText.textContent = txt;
+                    if (mdl.kind == "ABSTRACT_CLASS")
+                        $(headText).addClass("dlg-text-i");
                     bodyDiv.appendChild(tBody);
                 } else {
                     var elem = dlg.getDialogElement();

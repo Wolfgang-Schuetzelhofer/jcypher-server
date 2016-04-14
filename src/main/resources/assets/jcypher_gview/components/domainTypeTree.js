@@ -66,6 +66,8 @@
                     }
                     var img = JC_TemplateUtil.imageForType(typ.kind);
                     var li = createTreeListItem(cul, null, img, segs[segs.length - 1], false, false);
+                    if (typ.kind == "ABSTRACT_CLASS")
+                        $(li).addClass("dlg-text-i");
                 }
 
             }

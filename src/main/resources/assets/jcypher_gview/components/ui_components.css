@@ -65,6 +65,10 @@
     padding-top: .3em;
 }
 
+.dlg-text-i {
+    font-style: italic;
+}
+
 .dlg-body .list-group-item {
     background-color: #303c38;
     color: white;
