@@ -4,7 +4,7 @@
   <groupId>net.iot-solutions.graphdb</groupId>
   <artifactId>jcypher-server</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
   <description>A server running JCypher</description>
   <url>https://github.com/Wolfgang-Schuetzelhofer/jcypher-server/wiki</url>
   <developers>

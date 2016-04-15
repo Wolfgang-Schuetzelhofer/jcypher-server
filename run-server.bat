@@ -1,1 +1,1 @@
-java -jar target/jcypher-server-0.0.1-SNAPSHOT.jar
+java -jar target/jcypher-server-0.1.0.jar
