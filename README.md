@@ -3,7 +3,6 @@
 # JCypher-Server
 A server-side implementation of [**JCypher**](http://wolfgang-schuetzelhofer.github.io/jcypher/)  
 **Status: Pre-release development**  
-**A first pre-release will be published in April 2016**
 
 ## Getting Started
 - Download, install and run a [**Neo4J™ Server**](http://www.neo4j.org/) (the Community Edition is for free).
@@ -11,8 +10,7 @@ A server-side implementation of [**JCypher**](http://wolfgang-schuetzelhofer.git
 The file to download is named **jcypher-server-x.y.z-dist.zip**, where x.y.z is a release number.
 - Unpack the **.zip** file. You will find three files: **jcypher-server-x.y.z.jar**, **jcypher-server.yml**, **neo4j-server.yml**.
 The two **.yml** files are configuration files you may need to edit.
-- Edit the configuration files.
-**jcypher-server.yml** - at the top of the file you will find:
+- Edit the configuration file **jcypher-server.yml** - at the top of the file you will find:
 ```yaml
 server:
   type: simple
@@ -21,6 +19,23 @@ server:
     port: 8080
 ```
 You can modify the port where to run the JCypher-Server.
+- Edit the configuration file **neo4j-server.yml**. You can specify one or more Neo4J Servers to which you want to connect.
+```yaml
+neo4jConnections:
+# name is case insensitive
+   - name: db-0
+     url: http://localhost:7474
+   - name: db-1
+     url: http://localhost:7475
+     userId: userId
+     password: password
+```
+- From the directory where you have unzipped JCypher-Server you can run the Sever by calling: **java -jar jcypher-server-0.1.0.jar**.
+This will expect the two configuration files in the directory from where you start the server.
+Alternatively you can specify a directory where to look for the configuration files as command line parameter like so:
+**java -jar jcypher-server-0.1.0.jar -cfgdir=a-relative-or-absolute-directory**
+This allows to manage multiple configurations.
+- Connect with a browser to **http://localhost:8080/graph_view_neo/**. Note to use the port you have specified in your configuration.
 
 ## License & Copyright
 
