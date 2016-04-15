@@ -30,12 +30,13 @@ neo4jConnections:
      userId: userId
      password: password
 ```
-- From the directory where you have unzipped JCypher-Server you can run the Sever by calling: **java -jar jcypher-server-0.1.0.jar**.
+- From the directory where you have unzipped JCypher-Server you can run the Sever by calling: **java -jar jcypher-server-x.y.z.jar**.
 This will expect the two configuration files in the directory from where you start the server.
 Alternatively you can specify a directory where to look for the configuration files as command line parameter like so:
-**java -jar jcypher-server-0.1.0.jar -cfgdir=a-relative-or-absolute-directory**
+**java -jar jcypher-server-x.y.z.jar -cfgdir=a-relative-or-absolute-directory**
 This allows to manage multiple configurations.
 - Connect with a browser to **http://localhost:8080/graph_view_neo/**. Note to use the port you have specified in your configuration.
+- Start experimenting with the WEB-UI.
 
 ## License & Copyright
 
