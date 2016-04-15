@@ -6,9 +6,11 @@ A server-side implementation of [**JCypher**](http://wolfgang-schuetzelhofer.git
 **A first pre-release will be published in April 2016**
 
 ## Getting Started
-- Download, install and run a [**Neo4J Server**](http://www.neo4j.org/) (the community edition is for free).
+- Download, install and run a [**Neo4J™ Server**](http://www.neo4j.org/) (the Community Edition is for free).
 - Download a JCypher-Server Distribution from the [**releases page**](https://github.com/Wolfgang-Schuetzelhofer/jcypher-server/releases).
 The file to download is named **jcypher-server-x.y.z-dist.zip**, where x.y.z is a release number.
+- Unpack the **.zip** file. You will find three files: **jcypher-server-x.y.z.jar**, **jcypher-server.yml**, **neo4j-server.yml**.
+The two **.yml** files are configuration files you may need to edit.
 
 ## License & Copyright
 
