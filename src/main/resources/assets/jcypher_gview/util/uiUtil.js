@@ -21,7 +21,8 @@
         var hideGP = true;
 
         // public methods
-        this.alert = function (headTxt, bodyTxt, type = -1) {
+        this.alert = function (headTxt, bodyTxt, type) {
+            type = typeof type !== 'undefined' ? type : -1;
             var btn = document.getElementById("dlg-alert");
             $(btn).attr("data-head", headTxt);
             $(btn).attr("data-body", bodyTxt);
@@ -32,7 +33,7 @@
         this.showGlassPane = function () {
             var gp = document.getElementById("dlg-glasspane");
             if (gp.style.display != "block") {
-                hideGP = false;
+                //hideGP = false;
                 var h = $(window).height();
                 var w = $(window).width();
                 gp.style.height = h + "px";

@@ -24,9 +24,11 @@
     <script src="jcypher_gview/components/overlayDialog.js"></script>
     <script src="jcypher_gview/components/typeDialog.js"></script>
     <script src="jcypher_gview/components/graph_tools.js"></script>
+    <script src="jcypher_gview/editor/queryDialog.js"></script>
     <script src="jcypher_gview/jc_init.js"></script>
     <script src="jcypher_gview/jc_main.js"></script>
     <script src="jcypher_gview/jc_test.js"></script>
+    <!--script src="polyfill/template.js"></script-->
 </head>
 
 <body onload="JC_INIT.init();">
@@ -56,6 +58,9 @@
                     <div class="test-only">
                         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#jcvis-test">Test</button>
                         <div id="jcvis-test" class="collapse in">
+                            <input id="test_button_query" class="btn" type="button" value="test query" onclick="testQuery()" disabled></input>
+                            <br/>
+                            <br/>
                             <input id="test_button_all" class="btn" type="button" value="test all" onclick="testAll()" disabled></input>
                             <br/>
                             <br/>

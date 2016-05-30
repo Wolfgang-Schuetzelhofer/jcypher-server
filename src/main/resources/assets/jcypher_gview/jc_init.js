@@ -16,7 +16,7 @@
 
 ! function () {
     var jc_init = function () {
-        TEST_MODE = false;
+        TEST_MODE = true;
 
         // public methods
         this.loadSampleData = function () {
@@ -165,6 +165,7 @@
             var html = NEO_DOC.documentElement;
             var app_inj = cw.angular.element(html).injector();
             DOLLAR_Q = app_inj.get('$q');
+            document.getElementById("test_button_query").disabled = false;
             document.getElementById("test_button_all").disabled = false;
             document.getElementById("test_button_person").disabled = false;
             document.getElementById("test_button_test").disabled = false;

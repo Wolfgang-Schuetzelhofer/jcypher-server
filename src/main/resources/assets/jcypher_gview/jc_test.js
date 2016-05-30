@@ -1,12 +1,12 @@
 /************************************************************************
  * Copyright (c) 2016 IoT-Solutions e.U.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -84,6 +84,15 @@ function test() {
 
 function testAll() {
     JC_CommandExecutor.execCypherQuery("MATCH (n) RETURN n LIMIT 100");
+    return;
+}
+
+function testQuery() {
+    var pos = {x: 300, y: 150};
+    var dlg = JC_QueryDialog.getCreate("TestQuery", pos, {
+        x: 0,
+        y: 0
+    });
     return;
 }
 

@@ -36,8 +36,9 @@
                 if (!('content' in document.createElement('template'))) {
                     alert("templates not supported by browser!");
                 } else {
-                    return document.importNode(
-                        document.getElementById(templId).content.children[0], true);
+                    var cont = document.getElementById(templId).content;
+                    var chld = getFirstElem(cont.childNodes);
+                    return document.importNode(chld, true);
                 }
             }
 
@@ -54,6 +55,15 @@
                     par.insertBefore(list[i], repl);
                 }
                 par.removeChild(repl);
+            }
+            
+            // private
+            var getFirstElem = function(nodes) {
+                for (var i = 0; i < nodes.length; i++) {
+                    var elem = nodes[i];
+                    if (elem.nodeType == elem.ELEMENT_NODE)
+                        return elem;
+                }
             }
         }
         // makes JC_TemplateUtil global
