@@ -2,3 +2,8 @@
     background-color: white;
     color: black;
 }
+
+.ed-add-opt {
+    color: green;
+    cursor: pointer;
+}

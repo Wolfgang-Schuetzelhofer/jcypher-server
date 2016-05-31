@@ -42,8 +42,12 @@
         //public
         this.getStatementContainer = function () {
             if (statementContainer == null) {
-                statementContainer = ui_fact.createStatementContainer();
+                statementContainer = ui_fact.createUIElem("EditorBody", "500px");
                 statementContainer.jc_editor = this;
+                $(statementContainer).click(function (event) {
+                    var trgt = event.target;
+                    return;
+                });
                 initStatements(statementContainer);
             }
             return statementContainer;
@@ -52,8 +56,10 @@
         //private
         var initStatements = function(stmtContainer) {
             if (content == null) { // empty
-                var sl = [ui_fact.createStatementLine("500px")];
-                ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, sl, "ed-statements");
+                var sl = ui_fact.createUIElem("StatementLine");
+                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
+                sl.appendChild(add);
+                ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
                 
             }
@@ -67,15 +73,14 @@
         var refFontSize = null;
 
         //public
-        this.createStatementContainer = function () {
-            var ret = templateUtil.loadTemplate("EditorBody");
-            return ret;
-        }
-        
-        this.createStatementLine = function (width) {
-            var ret = templateUtil.loadTemplate("StatementLine");
+        this.createUIElem = function (templId, width, height, clazzes) {
+            var ret = templateUtil.loadTemplate(templId);
             if (width != null)
                 ret.style.width = width;
+            if (height != null)
+                ret.style.height = height;
+            if (clazzes != null)
+                $(ret).addClass(clazzes);
             return ret;
         }
         
