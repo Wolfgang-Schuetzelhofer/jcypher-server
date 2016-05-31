@@ -1,12 +1,12 @@
 /************************************************************************
  * Copyright (c) 2016 IoT-Solutions e.U.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +17,15 @@
 ! function () {
     //alert("templateUtil executing");
 
-    var templateUtil = function () {
+    var templateUtil = function (impId) {
+            //private
+            var importId = impId;
+
             //public
+            this.createTemplateUtil = function(impId) {
+                return new templateUtil(impId);
+            }
+        
             this.imageForType = function (typ) {
                 var img = null;
                 if (typ == "CLASS")
@@ -33,10 +40,11 @@
             }
 
             this.loadTemplate = function (templId) {
+                var imp = document.getElementById(importId).import;
                 if (!('content' in document.createElement('template'))) {
                     alert("templates not supported by browser!");
                 } else {
-                    var cont = document.getElementById(templId).content;
+                    var cont = imp.getElementById(templId).content;
                     var chld = getFirstElem(cont.childNodes);
                     return document.importNode(chld, true);
                 }
@@ -57,8 +65,16 @@
                 par.removeChild(repl);
             }
             
+            this.tmplAppendChildren = function (elem, list, at) {
+                var toApp = $(elem).find("." + at)[0];
+                var i;
+                for (i = 0; i < list.length; i++) {
+                    toApp.appendChild(list[i]);
+                }
+            }
+
             // private
-            var getFirstElem = function(nodes) {
+            var getFirstElem = function (nodes) {
                 for (var i = 0; i < nodes.length; i++) {
                     var elem = nodes[i];
                     if (elem.nodeType == elem.ELEMENT_NODE)
@@ -67,6 +83,6 @@
             }
         }
         // makes JC_TemplateUtil global
-    JC_TemplateUtil = new templateUtil();
+    JC_TemplateUtil = new templateUtil("imp-templates");
 
 }();

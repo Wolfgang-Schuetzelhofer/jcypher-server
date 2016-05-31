@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="jcypher_gview/overwrite.css">
     <link rel="stylesheet" type="text/css" href="jcypher_gview/components/tree.css">
     <link rel="stylesheet" type="text/css" href="jcypher_gview/components/ui_components.css">
+    <link rel="stylesheet" type="text/css" href="jcypher_gview/editor/editor.css">
     <script src="jcypher_gview/util/domUtil.js"></script>
     <script src="jcypher_gview/util/graphUtil.js"></script>
     <script src="jcypher_gview/util/uiUtil.js"></script>
@@ -24,7 +25,8 @@
     <script src="jcypher_gview/components/overlayDialog.js"></script>
     <script src="jcypher_gview/components/typeDialog.js"></script>
     <script src="jcypher_gview/components/graph_tools.js"></script>
-    <script src="jcypher_gview/editor/queryDialog.js"></script>
+    <script src="jcypher_gview/editor/editor.js"></script>
+    <script src="jcypher_gview/components/queryDialog.js"></script>
     <script src="jcypher_gview/jc_init.js"></script>
     <script src="jcypher_gview/jc_main.js"></script>
     <script src="jcypher_gview/jc_test.js"></script>
@@ -119,74 +121,8 @@
     </div>
 
     <!-- Templates -->
-    <template id="ListSelExpandUI">
-        <fieldset class="jcvis-fs">
-            <legend class="jcvis-fs"></legend>
-            <div class="dropdown well well-sm p-select">
-                <div class="jcvis-width-1 dlg-click" data-toggle="dropdown">
-                    <span></span>
-                    <span class="glyphicon glyphicon-triangle-bottom dlg-butIco"></span>
-                </div>
-                <ul class="dropdown-menu">
-                </ul>
-            </div>
-            <div class="p-additions" style="display: none">Additions</div>
-            <div data-toggle="collapse" class="well well-sm p-explore-t dlg-click"><span>explore</span><span class="glyphicon glyphicon-folder-close dlg-butIco"></span>
-            </div>
-            <div class="collapse p-explore-c">
-            </div>
-        </fieldset>
-    </template>
-
-    <template id="ShowGraph">
-        <div class="well well-sm dlg-click">
-            <span>show graph</span><span class="glyphicon glyphicon-star dlg-butIco"></span>
-        </div>
-    </template>
-
-    <template id="OverlayDialog">
-        <div class="dlg-dialog">
-            <div class="dlg-head">
-                <img src="" class="dlg-head-img"></img>
-                <span class="dlg-head-txt">Head</span>
-                <span class="glyphicon glyphicon-remove dlg-close"></span>
-            </div>
-            <div class="dlg-body">
-            </div>
-        </div>
-    </template>
-
-    <template id="TypeBody">
-        <ul class="list-group dlg-compartments">
-            <li class="list-group-item dlg-extends">
-                <div class="dlg-compartment-head">Extends</div>
-                <span class="dlg-extends-content"></span>
-            </li>
-            <li class="list-group-item dlg-implements">
-                <div class="dlg-compartment-head">Implements</div>
-                <span class="dlg-implements-content"></span>
-            </li>
-            <li class="list-group-item dlg-fields">
-                <div class="dlg-compartment-head">Fields</div>
-                <table>
-                    <tr class="dlg-fields-content"></tr>
-                </table>
-            </li>
-            <li class="list-group-item dlg-values">
-                <span class="dlg-values-content"></span>
-            </li>
-        </ul>
-    </template>
-
-    <template id="TField">
-        <tr>
-            <td class="dlg-fieldname-td"><span class="dlg-field-name"></span>
-            </td>
-            <td><span class="dlg-field-type"></span>
-            </td>
-        </tr>
-    </template>
-
+    <link href="jcypher_gview/components/templates.html" rel="import" id="imp-templates"/>
+    <link href="jcypher_gview/editor/ed-templates.html" rel="import" id="ed-templates"/>
 </body>
 
 </html>

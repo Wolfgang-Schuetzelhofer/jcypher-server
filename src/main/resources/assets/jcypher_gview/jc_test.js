@@ -89,7 +89,7 @@ function testAll() {
 
 function testQuery() {
     var pos = {x: 300, y: 150};
-    var dlg = JC_QueryDialog.getCreate("TestQuery", pos, {
+    var dlg = JC_QueryDialog.getCreate("TestQuery", null, pos, {
         x: 0,
         y: 0
     });
