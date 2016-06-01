@@ -34,11 +34,12 @@
                 p = pos;
             var dlg = JC_OverlayDialog.getOverlayDialog(queryName);
             if (dlg == null) {
-                dlg = JC_OverlayDialog.create(queryName, p, "queryDialog");
+                var ed = JC_EditorFactory.createEditor(queryModel, null);
+                dlg = JC_OverlayDialog.create(queryName, p, "queryDialog", ed.editorClosed);
                 var dlgElem = dlg.getDialogElement();
                 var headText = $(dlgElem).find(".dlg-head-txt")[0];
                 headText.textContent = queryName;
-                var eBody = JC_EditorFactory.createEditor(queryModel, null).getStatementContainer();
+                var eBody = ed.getStatementContainer();
                 var bodyDiv = $(dlgElem).children(".dlg-body")[0];
                 bodyDiv.appendChild(eBody);
             } else {

@@ -46,6 +46,9 @@
                 statementContainer.jc_editor = this;
                 $(statementContainer).click(function (event) {
                     var trgt = event.target;
+                    if ($(trgt).hasClass("ed-elem")) {
+                        showProposal(trgt);
+                    }
                     return;
                 });
                 initStatements(statementContainer);
@@ -53,24 +56,58 @@
             return statementContainer;
         }
         
+        this.editorClosed = function() {
+            hideProposal();
+        }
+
         //private
-        var initStatements = function(stmtContainer) {
+        var showProposal = function (atElem) {
+            var rect = atElem.getBoundingClientRect();
+            var px = rect.left + (rect.right - rect.left)/2 + "px";
+            var py = (rect.bottom - 2*ui_fact.getRefFontSize()) + "px";
+            //var py = rect.bottom + "px";
+            
+            var prop = ui_fact.getProposalDialog();
+            if (prop.parentNode != null)
+                prop.parentNode.removeChild(prop);
+            var pBody = $(prop).children(".prop-body")[0];
+            $(pBody).empty();
+            /***********/
+            var sl = ui_fact.createUIElem("StatementLine");
+            $(sl).css("width", "300px");
+            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-asterisk");
+            sl.appendChild(add);
+            pBody.appendChild(sl);
+            /***********/
+
+            $(prop).css({"left": px, "top": py});
+            document.body.appendChild(prop);
+        }
+        
+        var hideProposal = function() {
+            var prop = ui_fact.getProposalDialog();
+            if (prop.parentNode != null)
+                prop.parentNode.removeChild(prop);
+        }
+
+        var initStatements = function (stmtContainer) {
             if (content == null) { // empty
                 var sl = ui_fact.createUIElem("StatementLine");
-                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
+                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt ed-elem");
                 sl.appendChild(add);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
-                
+
             }
         }
     }
-    
+
     /***********************************************/
     var ui_factory = function (importId) {
         //private
         var templateUtil = JC_TemplateUtil.createTemplateUtil(importId);
         var refFontSize = null;
+        var proposalDialog = null;
 
         //public
         this.createUIElem = function (templId, width, height, clazzes) {
@@ -83,16 +120,30 @@
                 $(ret).addClass(clazzes);
             return ret;
         }
-        
-        this.getTemplateUtil = function() {
+
+        this.getTemplateUtil = function () {
             return templateUtil;
         }
-        
-        this.getRefFontSize = function() {
+
+        this.getProposalDialog = function () {
+            if (proposalDialog == null) {
+                proposalDialog = this.createUIElem("ProposalDialog");
+            }
+            return proposalDialog;
+        }
+
+        this.getRefFontSize = function () {
             if (refFontSize == null)
                 refFontSize = parseFloat(window.getComputedStyle(document.body, null).getPropertyValue('font-size'));
             return refFontSize;
         }
+    }
+
+    /***********************************************/
+    var editElement = function (uiElem) {
+        var uiElement = uiElem;
+        var nextOnLevel = null;
+        var firstChild = null;
     }
 
     // makes JC_EditorFactory global

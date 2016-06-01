@@ -22,9 +22,11 @@
             var overlayDialogs = {};
 
             //public
-            this.create = function (dlgId, pos, dlgType) {
+            this.create = function (dlgId, pos, dlgType, onClose) {
                 overlayDialogs[dlgId] = new component(dlgId, function (olDlgId) {
                     overlayDialogs[olDlgId] = null;
+                    if (onClose != null)
+                        onClose();
                 }, dlgType);
                 if (pos != null) {
                     var elem = overlayDialogs[dlgId].getDialogElement();

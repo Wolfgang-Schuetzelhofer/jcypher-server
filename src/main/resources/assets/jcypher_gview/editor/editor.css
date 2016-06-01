@@ -7,3 +7,43 @@
     color: green;
     cursor: pointer;
 }
+
+.prop-dialog {
+    position: absolute;
+    z-index: 10;
+}
+
+.prop-head-out {
+    width: 100%;
+    background-color: transparent;
+}
+.prop-head-in {
+    background-color: #c1ccd4;
+    width: 4em;
+    height: 4em;
+    position: relative;
+    top: 2em;
+    margin: 0 auto;
+    /*
+    background:
+        -moz-radial-gradient(0 100%, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+        -moz-radial-gradient(100% 100%, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+        -moz-radial-gradient(100% 0, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+        -moz-radial-gradient(0 0, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px);
+    background:
+         -o-radial-gradient(0 100%, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+         -o-radial-gradient(100% 100%, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+         -o-radial-gradient(100% 0, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px),
+         -o-radial-gradient(0 0, circle, rgba(204,0,0,0) 14px, #c1ccd4 15px);
+    */
+    background:
+         -webkit-radial-gradient(0 100%, circle, rgba(204,0,0,0) 10em, #303c38 10em),
+         -webkit-radial-gradient(100% 100%, circle, rgba(204,0,0,0) 10em, #303c38 10em),
+         -webkit-radial-gradient(100% 0, circle, rgba(204,0,0,0) 2em, #303c38 2em),
+         -webkit-radial-gradient(0 0, circle, rgba(204,0,0,0) 2em, #303c38 2em);
+    background-position: bottom left, bottom right, top right, top left;
+    -moz-background-size: 50% 50%;
+    -webkit-background-size: 50% 50%;
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+}
