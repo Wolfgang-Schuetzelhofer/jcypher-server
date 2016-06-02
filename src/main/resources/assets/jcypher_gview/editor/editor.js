@@ -24,18 +24,19 @@
 
         //public
         // content may be null
-        this.createEditor = function (model, content) {
-            return new jc_editor(model, content, ui_fact);
+        this.createEditor = function (langModel, content) {
+            return new jc_editor(langModel, content, ui_fact);
         }
     }
 
     /***********************************************/
     // cont (content) may be null
-    var jc_editor = function (mdl, cont, fact) {
+    var jc_editor = function (lmdl, cont, fact) {
         //private
-        var model = mdl;
+        var langModel = lmdl;
         var content = cont;
         var ui_fact = fact;
+        var firstLine = null;
 
         var statementContainer = null;
 
@@ -46,8 +47,9 @@
                 statementContainer.jc_editor = this;
                 $(statementContainer).click(function (event) {
                     var trgt = event.target;
-                    if ($(trgt).hasClass("ed-elem")) {
-                        showProposal(trgt);
+                    var edElem = trgt.jc_editElem;
+                    if (edElem != null) {
+                        showProposal(edElem);
                     }
                     return;
                 });
@@ -55,36 +57,71 @@
             }
             return statementContainer;
         }
-        
-        this.editorClosed = function() {
+
+        this.editorClosed = function () {
             hideProposal();
         }
 
+        this.editorMoved = function (typ, dx, dy) {
+            var prop = ui_fact.getProposalDialog();
+            if (prop.parentNode != null) {
+                if (typ == 0) {
+                    prop.startPos = {};
+                    var bodyRect = document.body.getBoundingClientRect(),
+                        elemRect = prop.getBoundingClientRect();
+                    prop.startPos.sx = elemRect.left - bodyRect.left;
+                    prop.startPos.sy = elemRect.top - bodyRect.top;
+                } else if (typ == 1) {
+                    prop.style.left = prop.startPos.sx + dx + "px";
+                    prop.style.top = prop.startPos.sy + dy + "px";
+                } else if (typ == 2)
+                    prop.startPos = null;
+            }
+        }
+
         //private
-        var showProposal = function (atElem) {
+        var showProposal = function (edElem) {
+            var atElem = edElem.uiElement;
+            var bodyRect = document.body.getBoundingClientRect();
             var rect = atElem.getBoundingClientRect();
-            var px = rect.left + (rect.right - rect.left)/2 + "px";
-            var py = (rect.bottom - 2*ui_fact.getRefFontSize()) + "px";
-            //var py = rect.bottom + "px";
-            
+            var px = rect.left + (rect.right - rect.left) / 2 - bodyRect.left;
+            var py = rect.bottom - bodyRect.top;
+
             var prop = ui_fact.getProposalDialog();
             if (prop.parentNode != null)
                 prop.parentNode.removeChild(prop);
             var pBody = $(prop).children(".prop-body")[0];
             $(pBody).empty();
+            /****** fill body *****/
+            fillBody(pBody, edElem);
             /***********/
+
+            $(prop).css("visibility", "hidden");
+            document.body.appendChild(prop);
+            var ptrRect = $(prop).find(".prop-head-in")[0].getBoundingClientRect();
+            var propRect = prop.getBoundingClientRect();
+            var dLeft = (ptrRect.left + (ptrRect.right - ptrRect.left) / 2) - propRect.left;
+            var dTop = ptrRect.top - propRect.top;
+
+            px = px - dLeft + "px";
+            py = py - dTop + "px";
+
+            $(prop).css({
+                "left": px,
+                "top": py
+            });
+            $(prop).css("visibility", "visible");
+        }
+        
+        var fillBody = function(pBody, edElem) {
             var sl = ui_fact.createUIElem("StatementLine");
             $(sl).css("width", "300px");
             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-asterisk");
             sl.appendChild(add);
             pBody.appendChild(sl);
-            /***********/
-
-            $(prop).css({"left": px, "top": py});
-            document.body.appendChild(prop);
         }
-        
-        var hideProposal = function() {
+
+        var hideProposal = function () {
             var prop = ui_fact.getProposalDialog();
             if (prop.parentNode != null)
                 prop.parentNode.removeChild(prop);
@@ -93,8 +130,12 @@
         var initStatements = function (stmtContainer) {
             if (content == null) { // empty
                 var sl = ui_fact.createUIElem("StatementLine");
-                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt ed-elem");
+                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
                 sl.appendChild(add);
+                firstLine = new editElement(sl);
+                var elem = new editElement(add);
+                add.jc_editElem = elem;
+                firstLine.setChild(add);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
 
@@ -141,9 +182,18 @@
 
     /***********************************************/
     var editElement = function (uiElem) {
-        var uiElement = uiElem;
         var nextOnLevel = null;
+        var prevOnLevel = null;
         var firstChild = null;
+        var parent = null;
+        
+        //public
+        this.uiElement = uiElem;
+        
+        this.setChild = function(elem) {
+            firstChild = elem;
+            elem.parent = this;
+        }
     }
 
     // makes JC_EditorFactory global

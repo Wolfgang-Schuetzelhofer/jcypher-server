@@ -22,12 +22,12 @@
             var overlayDialogs = {};
 
             //public
-            this.create = function (dlgId, pos, dlgType, onClose) {
+            this.create = function (dlgId, pos, dlgType, onClose, onMove) {
                 overlayDialogs[dlgId] = new component(dlgId, function (olDlgId) {
                     overlayDialogs[olDlgId] = null;
                     if (onClose != null)
                         onClose();
-                }, dlgType);
+                }, dlgType, onMove);
                 if (pos != null) {
                     var elem = overlayDialogs[dlgId].getDialogElement();
                     elem.style.left = pos.x + "px";
@@ -51,10 +51,11 @@
 
             //private
             // object constructor
-            var component = function (dlgId, closeFunc, type) {
+            var component = function (dlgId, closeFunc, type, onMv) {
                 var dialogId = dlgId;
                 var dialogType = type;
                 var closeFunction = closeFunc;
+                var onMove = onMv;
                 var dialog = JC_TemplateUtil.loadTemplate("OverlayDialog");
                 if (dialog != null) {
                     document.body.appendChild(dialog);
@@ -68,7 +69,8 @@
                                 elemRect = dialog.getBoundingClientRect();
                             startPos.dlgX = elemRect.left - bodyRect.left;
                             startPos.dlgY = elemRect.top - bodyRect.top;
-                            return;
+                            if (onMove != null)
+                                onMove(0, 0, 0);
                         }
                     };
                     $(dialog).children(".dlg-head")[0].onmousemove = function (event) {
@@ -77,10 +79,14 @@
                             var dy = event.clientY - startPos.sy;
                             dialog.style.left = startPos.dlgX + dx + "px";
                             dialog.style.top = startPos.dlgY + dy + "px";
+                            if (onMove != null)
+                                onMove(1, dx, dy);
                         }
                     };
                     $(dialog).children(".dlg-head")[0].onmouseup = function (event) {
                         startPos = null;
+                        if (onMove != null)
+                            onMove(2, 0, 0);
                     };
 
                     $(dialog).find(".dlg-close")[0].onclick = function (event) {

@@ -32,7 +32,7 @@
                     p = pos;
                 var dlg = JC_OverlayDialog.getOverlayDialog(typeName);
                 if (dlg == null) {
-                    dlg = JC_OverlayDialog.create(typeName, p, "typeDialog");
+                    dlg = JC_OverlayDialog.create(typeName, p, "typeDialog", null, null);
                     var mdl = JC_MAIN.getDomainModelElement(typeName);
                     var tBody = createTypeBody(mdl);
                     $(tBody).click(function (event) {

@@ -34,8 +34,8 @@
                 p = pos;
             var dlg = JC_OverlayDialog.getOverlayDialog(queryName);
             if (dlg == null) {
-                var ed = JC_EditorFactory.createEditor(queryModel, null);
-                dlg = JC_OverlayDialog.create(queryName, p, "queryDialog", ed.editorClosed);
+                var ed = JC_EditorFactory.createEditor(JC_DomainQueryModel, null);
+                dlg = JC_OverlayDialog.create(queryName, p, "queryDialog", ed.editorClosed, ed.editorMoved);
                 var dlgElem = dlg.getDialogElement();
                 var headText = $(dlgElem).find(".dlg-head-txt")[0];
                 headText.textContent = queryName;
@@ -65,7 +65,6 @@
     }
 
     /***********************************/
-    var queryModel = {}
         // makes JC_QueryDialog global
     JC_QueryDialog = new queryDialog();
 
