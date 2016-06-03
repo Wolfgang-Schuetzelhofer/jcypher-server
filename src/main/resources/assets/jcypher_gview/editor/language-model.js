@@ -22,12 +22,29 @@
         //private
 
         //public
-        this.createDesriptor = function(nNext) {
-            this.needNext = nNext;
+        this.EDIT_TYPE = {
+            SELECT: 0,
+            FILL:   1
         }
         
-        this.firstLine = {
-            createMatch: new this.createDesriptor(false),
+        /***************************************************/
+        this.descriptor = function(nNext, ed_type) {
+            this.needNext = nNext;
+            this.edit_type = ed_type;
+            this.next = null;
+        }
+        var terminate = new this.descriptor(false);
+        
+        /***************************************************/
+        this.firstLine = new this.descriptor(true, this.EDIT_TYPE.SELECT);
+        this.firstLine.next = {
+            createMatch: terminate,
+        }
+        
+        /***************************************************/
+        this.followLine = new this.descriptor(true, this.EDIT_TYPE.SELECT);
+        this.followLine.next = {
+            createMatch: terminate,
         }
     }
 

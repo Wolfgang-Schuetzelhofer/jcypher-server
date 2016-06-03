@@ -17,6 +17,12 @@
 ! function () {
     //alert("jc_ui executing");
 
+    var ELEM_TYPE = {
+        ADD: 0,
+        LANG_ELEM: 1,
+        LINE: 2
+    }
+
     /***********************************************/
     var editorFactory = function (importId) {
         //private
@@ -36,7 +42,7 @@
         var langModel = lmdl;
         var content = cont;
         var ui_fact = fact;
-        var firstLine = null;
+        var startEditElem = null;
 
         var statementContainer = null;
 
@@ -112,13 +118,21 @@
             });
             $(prop).css("visibility", "visible");
         }
-        
-        var fillBody = function(pBody, edElem) {
+
+        // calculate the proposal based on the model
+        var fillBody = function (pBody, edElem) {
+            var mdlElem = edElem.calcModelElem(langModel);
+            
+            var sel = ui_fact.createUIElem("ProposalSelect");
+
             var sl = ui_fact.createUIElem("StatementLine");
             $(sl).css("width", "300px");
+            /*
             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-asterisk");
-            sl.appendChild(add);
+            sl.appendChild(add);*/
+            sl.appendChild(sel);
             pBody.appendChild(sl);
+            $(sl).jctinyselect();
         }
 
         var hideProposal = function () {
@@ -132,10 +146,10 @@
                 var sl = ui_fact.createUIElem("StatementLine");
                 var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
                 sl.appendChild(add);
-                firstLine = new editElement(sl);
-                var elem = new editElement(add);
+                startEditElem = new editElement(sl, ELEM_TYPE.LINE, langModel); // first line
+                var elem = new editElement(add, ELEM_TYPE.ADD);
                 add.jc_editElem = elem;
-                firstLine.setChild(add);
+                startEditElem.setChild(elem);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
 
@@ -181,18 +195,54 @@
     }
 
     /***********************************************/
-    var editElement = function (uiElem) {
-        var nextOnLevel = null;
-        var prevOnLevel = null;
+    var editElement = function (uiElem, el_type, mdlElem) {
+        var nextConcat = null;
+        var prevConcat = null;
+        var prevSibling = null;
+        var nextSibling = null;
         var firstChild = null;
         var parent = null;
-        
+        // only initialized on line
+        var modelElem = mdlElem;
+
         //public
         this.uiElement = uiElem;
-        
-        this.setChild = function(elem) {
+        this.elemType = el_type;
+
+        this.setChild = function (elem) {
             firstChild = elem;
             elem.parent = this;
+        }
+
+        // calculate my model element for the proposal
+        this.calcModelElem = function(lModel) {
+            var mdlElem = null;
+            if (this.elemType == ELEM_TYPE.ADD) {
+                if (this.prevConcat != null) {
+
+                } else if (this.parent != null) {
+                    mdlElem = this.parent.modelElemForChild(this.calcSiblingIdx());
+                }
+            }
+            return mdlElem;
+        }
+        
+        this.modelElemForChild = function(idx) {
+            if (this.elemType == ELEM_TYPE.LINE) { // modelElem must be set
+                // calc for first in line
+                if (this.prevSibling == null) // first line
+                    return modelElem.firstLine;
+                else
+                    return modelElem.followLine;
+            }
+            return null;
+        }
+        
+        this.calcSiblingIdx = function() {
+            var idx = 0;
+            if (this.prevSibling != null)
+                idx = this.prevSibling.calcSiblingIdx() + 1;
+            return idx;
         }
     }
 
