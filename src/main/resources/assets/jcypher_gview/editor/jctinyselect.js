@@ -67,7 +67,6 @@
             this.state.dropdown.append(this.state.itemContainer);
             this.state.dropdown.on('focus', 'li', function () {
                 var self = $(this);
-                self.addClass('selected').siblings().removeClass('selected');
                 //self.closest('div.dropdown').scrollTop(self.index() * self.outerHeight());
                 //self.closest('div.dropdown').scrollTo(self);
             }).on('keydown', 'li', {
@@ -128,7 +127,6 @@
 
                 if (opt.val == this.state.selectedValue) {
                     this.state.searchBox[0].setAttribute("value", opt.text);
-                    newLi.addClass("selected");
                 }
                 newLi.on("mousedown", {
                     self: this
@@ -142,7 +140,7 @@
             this.state.searchContainer = $("<div></div>").
             addClass("searchcontainer");
             this.state.searchBox = $("<input type='text'></input>").
-            addClass("searchbox").
+            addClass("searchbox nok").
             on("click", function (e) {
                 e.stopPropagation();
             }).
@@ -186,7 +184,9 @@
                 e.preventDefault(); // prevent the default action (scroll / move caret)
             });
 
-            this.state.searchContainer.append($("<span class='searchicon'></span>"));
+            this.state.searchContainer.append($("<span class='glyphicon glyphicon-search searchicon'></span>"));
+            this.state.searchContainer.append($("<span class='glyphicon glyphicon-ok sel-ok nok'></span>"));
+            this.state.searchContainer.append($("<span class='glyphicon glyphicon-remove sel-cancel'></span>"));
             this.state.searchContainer.append(this.state.searchBox);
             this.state.container.append(this.state.searchContainer);
         },
@@ -203,7 +203,17 @@
             });
 
             this.state.filteredItemData = this.state.originalItemData;
-            //this.state.selectedValue = $el.val();
+        },
+        
+        setSelectedValue: function(val) {
+            this.state.selectedValue = val;
+            if (val == -1) {
+                this.state.searchBox.removeClass("ok").addClass("nok");
+                this.state.searchContainer.children(".sel-ok").removeClass("ok").addClass("nok");
+            } else {
+                this.state.searchBox.removeClass("nok").addClass("ok");
+                this.state.searchContainer.children(".sel-ok").removeClass("nok").addClass("ok");
+            }
         },
 
         /* ******************************************************************* *
@@ -233,10 +243,17 @@
                     });
                 }
 
-                self.state.selectedValue = -1;
-                self.openDropdown(self);
-
                 self.createItems();
+                var val = -1;
+                if (self.state.filteredItemData.length == 1) {
+                    var itm = self.state.filteredItemData[0];
+                    val = (itm.text == sval) ? itm.val : -1;
+                }
+                self.setSelectedValue(val);
+                if (val == -1)
+                    self.openDropdown(self);
+                else
+                    self.closeDropdown(self);
             }
         },
 
@@ -298,18 +315,12 @@
             var self = e.data.self,
                 item = $(e.currentTarget);
 
-            self.state.dropdown.find("li").each(function () {
-                $(this).removeClass("selected");
-            });
-
             self.state.inDropDown = false; // leave dropdown
 
-            item.addClass("selected");
             var txt = item.text();
             self.state.searchBox.val(txt);
 
-            self.state.selectedValue = item.attr("data-value");
-            //self.state.$el.val(self.state.selectedValue);
+            self.setSelectedValue(item.attr("data-value"));
             self.state.$el.trigger("change");
 
             var sval = item.text();

@@ -84,8 +84,12 @@
                     prop.startPos = null;
             }
         }
-
+        
         //private
+        var proposalClosed = function() {
+            return;
+        }
+        
         var showProposal = function (edElem) {
             var atElem = edElem.uiElement;
             var bodyRect = document.body.getBoundingClientRect();
@@ -117,6 +121,8 @@
                 "top": py
             });
             $(prop).css("visibility", "visible");
+            var sbox = $(prop).find(".searchbox");
+            sbox.focus();
         }
 
         // calculate the proposal based on the model
@@ -127,12 +133,10 @@
 
             var sl = ui_fact.createUIElem("StatementLine");
             $(sl).css("width", "300px");
-            /*
-            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-asterisk");
-            sl.appendChild(add);*/
             sl.appendChild(sel);
             pBody.appendChild(sl);
-            $(sl).jctinyselect();
+            var opts = {onClose: proposalClosed};
+            $(sl).jctinyselect(opts);
         }
 
         var hideProposal = function () {
