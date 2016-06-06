@@ -55,7 +55,7 @@
                     var trgt = event.target;
                     var edElem = trgt.jc_editElem;
                     if (edElem != null) {
-                        showProposal(edElem);
+                        showProposal(trgt);
                     }
                     return;
                 });
@@ -84,14 +84,41 @@
                     prop.startPos = null;
             }
         }
-        
+
         //private
-        var proposalClosed = function() {
+        // type: 0..OK, 1..CANCEL; value: id of selected
+        var proposalClosed = function (type, mdlElem, prop, edElem) {
+            hideProposal();
+            if (type == 0) { // OK
+                edElem.modelElem = mdlElem.next;
+                edElem.tokenName = prop;
+                edElem.display = {
+                    displayPref: mdlElem.displayPref,
+                    displayPostf: mdlElem.displayPostf
+                }
+                var pref = edElem.uiElements[0].previousElementSibling;
+                var par = edElem.uiElements[0].parentElement;
+                edElem.elemType = ELEM_TYPE.LANG_ELEM;
+                $.each(edElem.uiElements, function (idx, val) {
+                    val.remove();
+                });
+                if (edElem.display.displayPref != null) {
+                    $.each(edElem.display.displayPref, function(idx, val){
+                        var add = $(ui_fact.createUIElem("Token", null, null, val.displayType));
+                        add.text(val.text);
+                        add[0].jc_editElem = edElem;
+                        if (pref != null)
+                            $(prev).insertAfter(add);
+                        else
+                            $(par).append(add);
+                    })
+                }
+            }
             return;
         }
-        
-        var showProposal = function (edElem) {
-            var atElem = edElem.uiElement;
+
+        var showProposal = function (atElem) {
+            var edElem = atElem.jc_editElem;
             var bodyRect = document.body.getBoundingClientRect();
             var rect = atElem.getBoundingClientRect();
             var px = rect.left + (rect.right - rect.left) / 2 - bodyRect.left;
@@ -128,14 +155,33 @@
         // calculate the proposal based on the model
         var fillBody = function (pBody, edElem) {
             var mdlElem = edElem.calcModelElem(langModel);
-            
-            var sel = ui_fact.createUIElem("ProposalSelect");
+            var sel;
+            var mdlElems = [];
+            var props = [];
+            if (mdlElem.edit_type == langModel.EDIT_TYPE.SELECT) {
+                sel = ui_fact.createUIElem("ProposalSelect");
+                var selectr = $(sel);
+                var idx = 0;
+                var nxt = mdlElem.getNext();
+                if (nxt != null) {
+                    $.each(nxt, function (prop, val) {
+                        selectr.append("<option value='" + idx + "'>" + prop + "</option>");
+                        props.push(prop);
+                        mdlElems.push(val);
+                    });
+                }
+            } else if (mdlElem.edit_type == langModel.EDIT_TYPE.FILL) {}
 
             var sl = ui_fact.createUIElem("StatementLine");
-            $(sl).css("width", "300px");
+            $(sl).css("width", "30em");
             sl.appendChild(sel);
             pBody.appendChild(sl);
-            var opts = {onClose: proposalClosed};
+            var opts = {
+                onClose: proposalClosed,
+                modelElements: mdlElems,
+                properties: props,
+                editElement: edElem
+            };
             $(sl).jctinyselect(opts);
         }
 
@@ -143,6 +189,7 @@
             var prop = ui_fact.getProposalDialog();
             if (prop.parentNode != null)
                 prop.parentNode.removeChild(prop);
+            $(prop).children(".prop-body").empty();
         }
 
         var initStatements = function (stmtContainer) {
@@ -150,8 +197,8 @@
                 var sl = ui_fact.createUIElem("StatementLine");
                 var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
                 sl.appendChild(add);
-                startEditElem = new editElement(sl, ELEM_TYPE.LINE, langModel); // first line
-                var elem = new editElement(add, ELEM_TYPE.ADD);
+                startEditElem = new editElement([sl], ELEM_TYPE.LINE, langModel.firstLine); // first line
+                var elem = new editElement([add], ELEM_TYPE.ADD);
                 add.jc_editElem = elem;
                 startEditElem.setChild(elem);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
@@ -199,19 +246,21 @@
     }
 
     /***********************************************/
-    var editElement = function (uiElem, el_type, mdlElem) {
+    var editElement = function (uiElems, el_type, mdlElem) {
         var nextConcat = null;
         var prevConcat = null;
         var prevSibling = null;
         var nextSibling = null;
         var firstChild = null;
         var parent = null;
-        // only initialized on line
-        var modelElem = mdlElem;
 
         //public
-        this.uiElement = uiElem;
+        this.uiElements = uiElems;
         this.elemType = el_type;
+        // only initialized on line
+        this.modelElem = mdlElem;
+        this.tokenName = null;
+        this.displayInfo = null;
 
         this.setChild = function (elem) {
             firstChild = elem;
@@ -219,7 +268,7 @@
         }
 
         // calculate my model element for the proposal
-        this.calcModelElem = function(lModel) {
+        this.calcModelElem = function (lModel) {
             var mdlElem = null;
             if (this.elemType == ELEM_TYPE.ADD) {
                 if (this.prevConcat != null) {
@@ -230,19 +279,15 @@
             }
             return mdlElem;
         }
-        
-        this.modelElemForChild = function(idx) {
+
+        this.modelElemForChild = function (idx) {
             if (this.elemType == ELEM_TYPE.LINE) { // modelElem must be set
-                // calc for first in line
-                if (this.prevSibling == null) // first line
-                    return modelElem.firstLine;
-                else
-                    return modelElem.followLine;
+                return this.modelElem;
             }
             return null;
         }
-        
-        this.calcSiblingIdx = function() {
+
+        this.calcSiblingIdx = function () {
             var idx = 0;
             if (this.prevSibling != null)
                 idx = this.prevSibling.calcSiblingIdx() + 1;

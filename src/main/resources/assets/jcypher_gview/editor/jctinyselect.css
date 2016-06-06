@@ -42,6 +42,7 @@
 }
 
 .tinyselect .searchicon {
+    cursor: pointer;
 	position: absolute;
 	top: 6px;
 	left: 8px;
@@ -57,8 +58,10 @@
 }
 .tinyselect .sel-ok.ok {
     color: green;
+    cursor: pointer;
 }
 .tinyselect .sel-cancel {
+    cursor: pointer;
     position: absolute;
     top: 6px;
 	right: 8px;

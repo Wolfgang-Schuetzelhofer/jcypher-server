@@ -34,7 +34,7 @@
                 p = pos;
             var dlg = JC_OverlayDialog.getOverlayDialog(queryName);
             if (dlg == null) {
-                var ed = JC_EditorFactory.createEditor(JC_DomainQueryModel, null);
+                var ed = JC_EditorFactory.createEditor(JC_MAIN.getDomainQueryModel(), null);
                 dlg = JC_OverlayDialog.create(queryName, p, "queryDialog", ed.editorClosed, ed.editorMoved);
                 var dlgElem = dlg.getDialogElement();
                 var headText = $(dlgElem).find(".dlg-head-txt")[0];

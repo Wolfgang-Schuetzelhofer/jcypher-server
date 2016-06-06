@@ -29,6 +29,7 @@
 
         //private vars
         var domainModel = null;
+        var domainQueryModel = null;
         var domainGraph = null;
         var domainName = null;
         var dbName = null;
@@ -55,6 +56,10 @@
         this.getDomainModel = function () {
             return domainModel;
         }
+        
+        this.getDomainQueryModel = function () {
+            return domainQueryModel;
+        }
 
         this.getDomainModelElement = function (typeName) {
             var i;
@@ -70,6 +75,7 @@
                 JC_UI_UTIL.showGlassPane();
                 dbName = db;
                 domainModel = null;
+                domainQueryModel = null;
                 domainGraph = null;
                 domainName = null;
                 var gv = document.getElementById("graph_view");
@@ -97,12 +103,14 @@
         this.setDomainName = function (dn, container) {
             if (dn != domainName) {
                 domainModel = null;
+                domainQueryModel = null;
                 domainGraph = null;
                 domainName = dn;
                 if (domainName != null) {
                     if (domainModel == null) {
                         JC_REST.loadModel(dbName, domainName, function (data) {
                             domainModel = data;
+                            domainQueryModel = new jc_DomainQueryModel(domainModel);
                             JC_DomainTypeTree.createModelTree(container, domainModel);
                         });
                     } else {
@@ -115,6 +123,7 @@
         this.clearDomain = function () {
             domainName = null;
             domainModel = null;
+            domainQueryModel = null;
             domainGraph = null;
         }
 

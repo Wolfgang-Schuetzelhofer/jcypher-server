@@ -26,6 +26,8 @@
 
                 searchContainer: null,
                 searchBox: null,
+                searchIcoMD: false,
+                filtered: false,
 
                 $el: null,
 
@@ -175,7 +177,14 @@
                     break;
 
                 case 27: // esc
-                    self.closeDropdown(self);
+                    if (self.state.droppedDown)
+                        self.closeDropdown(self);
+                    else
+                        self.finished(1, self);
+                    break;
+
+                case 13: // enter
+                    self.finished(0, self);
                     break;
 
                 default:
@@ -184,10 +193,23 @@
                 e.preventDefault(); // prevent the default action (scroll / move caret)
             });
 
-            this.state.searchContainer.append($("<span class='glyphicon glyphicon-search searchicon'></span>"));
-            this.state.searchContainer.append($("<span class='glyphicon glyphicon-ok sel-ok nok'></span>"));
-            this.state.searchContainer.append($("<span class='glyphicon glyphicon-remove sel-cancel'></span>"));
             this.state.searchContainer.append(this.state.searchBox);
+            var si = this.state.searchContainer.append($("<span class='glyphicon glyphicon-search searchicon'></span>"));
+            var nok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-ok sel-ok nok'></span>"));
+            var ok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-remove sel-cancel'></span>"));
+            si.on("click", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                e.stopPropagation();
+                self.searchIcoClicked(e);
+            }).
+            on("mousedown", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                self.state.searchIcoMD = true;
+            });
             this.state.container.append(this.state.searchContainer);
         },
 
@@ -204,8 +226,8 @@
 
             this.state.filteredItemData = this.state.originalItemData;
         },
-        
-        setSelectedValue: function(val) {
+
+        setSelectedValue: function (val) {
             this.state.selectedValue = val;
             if (val == -1) {
                 this.state.searchBox.removeClass("ok").addClass("nok");
@@ -216,9 +238,50 @@
             }
         },
 
+        doFilter: function (sval, self) {
+            self.state.filteredItemData = self.state.originalItemData.filter(function (item) {
+                return item.text.toLowerCase().indexOf(sval) >= 0 ? true : false;
+            });
+            self.state.filtered = true;
+        },
+
         /* ******************************************************************* *
          * Event handlers
          * ******************************************************************* */
+        // type: 0..OK, 1..CANCEL
+        finished: function (type, self) {
+            if (type == 0 && self.state.selectedValue == -1)
+                return;
+            if (self.config.onClose != null) {
+                if (type == 0) {
+                    var idx = parseInt(self.state.selectedValue);
+                    self.config.onClose(type, self.config.modelElements[idx], self.config.properties[idx],
+                                       self.config.editElement);
+                } else
+                    self.config.onClose(type, null, null, self.config.editElement);
+            }
+        },
+
+        searchIcoClicked: function (e) {
+            var self = e.data.self;
+            self.state.searchIcoMD = false;
+            if (!self.state.droppedDown) {
+                self.state.filteredItemData = self.state.originalItemData;
+                self.createItems();
+                self.state.filtered = true;
+                self.openDropdown(self);
+                self.state.filtered = false;
+            } else {
+                var sval = self.state.searchBox.val();
+                self.doFilter(sval, self);
+                self.closeDropdown(self, function () {
+                    var strLength = self.state.searchBox.val().length;
+                    self.state.searchBox.focus();
+                    self.state.searchBox[0].setSelectionRange(strLength, strLength);
+                }); // close dropdown
+            }
+        },
+
         onDocumentClicked: function (e) {
             var self = e.data.self;
 
@@ -238,9 +301,7 @@
                 if (sval.length === 0) {
                     self.state.filteredItemData = self.state.originalItemData;
                 } else {
-                    self.state.filteredItemData = self.state.originalItemData.filter(function (item) {
-                        return item.text.toLowerCase().indexOf(sval) >= 0 ? true : false;
-                    });
+                    self.doFilter(sval, self);
                 }
 
                 self.createItems();
@@ -260,6 +321,8 @@
         onSBExit: function (e) {
             var self = e.data.self;
 
+            if (self.state.searchIcoMD)
+                return;
             if (!self.state.inDropDown) {
                 self.closeDropdown(self);
             }
@@ -292,6 +355,11 @@
                 if (self.state.dropdown.is(":animated"))
                     return;
                 self.state.droppedDown = true;
+                if (!self.state.filtered) {
+                    var sval = self.state.searchBox.val();
+                    self.doFilter(sval, self);
+                    self.createItems();
+                }
                 if (after != null)
                     self.state.dropdown.slideDown(100, after);
                 else
@@ -321,12 +389,9 @@
             self.state.searchBox.val(txt);
 
             self.setSelectedValue(item.attr("data-value"));
-            self.state.$el.trigger("change");
 
             var sval = item.text();
-            self.state.filteredItemData = self.state.originalItemData.filter(function (item) {
-                return item.text.toLowerCase().indexOf(sval) >= 0 ? true : false;
-            });
+            self.doFilter(sval, self);
 
             self.closeDropdown(self, function () {
                 var strLength = self.state.searchBox.val().length;

@@ -14,42 +14,81 @@
  * limitations under the License.
  ************************************************************************/
 
-! function () {
-    //alert("jc_ui executing");
-
-    /***********************************************/
-    var domainQueryModel = function () {
-        //private
-
-        //public
-        this.EDIT_TYPE = {
-            SELECT: 0,
-            FILL:   1
-        }
-        
-        /***************************************************/
-        this.descriptor = function(nNext, ed_type) {
-            this.needNext = nNext;
-            this.edit_type = ed_type;
-            this.next = null;
-        }
-        var terminate = new this.descriptor(false);
-        
-        /***************************************************/
-        this.firstLine = new this.descriptor(true, this.EDIT_TYPE.SELECT);
-        this.firstLine.next = {
-            createMatch: terminate,
-        }
-        
-        /***************************************************/
-        this.followLine = new this.descriptor(true, this.EDIT_TYPE.SELECT);
-        this.followLine.next = {
-            createMatch: terminate,
-        }
+/***********************************************/
+var jc_DomainQueryModel = function (domModel) {
+    //private
+    var domainModel = domModel;
+    var getDomainTypes = function() {
+        var ret = $map(domainModel.types, function(typ){
+            return typ.name;
+        });
+        return ret;
     }
 
+    //public
+    this.EDIT_TYPE = {
+        SELECT: 0,
+        FILL: 1
+    }
+    
+    var DISPLAY_TYPE = {
+        L_TOKEN: "ed-lang-token",
+        L_KEYWORD: "ed-lang-keyword",
+        L_BRACKET: "ed-lang-bracket"
+    }
+    
+    this.displayUnit = function(txt, d_type) {
+        this.text = txt;
+        this.displayType = typeof d_type !== 'undefined' ? d_type : DISPLAY_TYPE.L_TOKEN;
+    }
+    var display_BR_OPEN = new this.displayUnit("(", DISPLAY_TYPE.L_BRACKET);
+    var display_BR_CLOSE = new this.displayUnit(")", DISPLAY_TYPE.L_BRACKET);
 
-    // makes JC_DomainQueryModel global
-    JC_DomainQueryModel = new domainQueryModel();
+    /***************************************************/
+    this.descriptor = function (nNext, nChlds, ed_type) {
+        this.edit_type = ed_type;
+        this.needNext = nNext;
+        this.needChildren = nChlds;
 
-}();
+        var next = null;
+        var chidren = null;
+
+        this.setNext = function (nxt) {
+            next = nxt;
+        }
+        this.getNext = function () {
+            return next;
+        }
+        this.setChildren = function (chlds) {
+            children = chlds;
+        }
+        this.getChildren = function () {
+            return chidren;
+        }
+    }
+    var terminate = new this.descriptor(false, false);
+
+    /***************************************************/
+    var modelTypesAsChildren = new this.descriptor(false, true);
+    modelTypesAsChildren.getChildren = getDomainTypes;
+
+    /***************************************************/
+    this.firstLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
+    this.firstLine.setNext({
+        createMatch: {
+            displayPref: [new this.displayUnit("createMatch"), display_BR_OPEN],
+            displayPostf: [display_BR_CLOSE],
+            next: modelTypesAsChildren
+        }
+    });
+
+    /***************************************************/
+    this.followLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
+    this.followLine.setNext({
+        createMatch: {
+            displayPref: [new this.displayUnit("createMatch"), display_BR_OPEN],
+            displayPostf: [display_BR_CLOSE],
+            next: modelTypesAsChildren
+        }
+    });
+}
