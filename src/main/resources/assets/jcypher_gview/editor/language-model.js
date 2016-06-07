@@ -18,11 +18,19 @@
 var jc_DomainQueryModel = function (domModel) {
     //private
     var domainModel = domModel;
-    var getDomainTypes = function() {
-        var ret = $map(domainModel.types, function(typ){
-            return typ.name;
+    var getDomainTypes = function () {
+        var ret = {};
+        $.each(domainModel.types, function (idx, typ) {
+            var obj = {};
+            var spl = typ.name.split(".");
+            var displ = spl[spl.length - 1];
+            obj.proposal = displ;
+            obj.displayPref = [new displayUnit(displ)];
+            obj.next = terminate;
+            ret[typ.name] = obj;
+            return;
         });
-        return ret;
+        return [ret];
     }
 
     //public
@@ -30,19 +38,24 @@ var jc_DomainQueryModel = function (domModel) {
         SELECT: 0,
         FILL: 1
     }
-    
+
     var DISPLAY_TYPE = {
         L_TOKEN: "ed-lang-token",
         L_KEYWORD: "ed-lang-keyword",
-        L_BRACKET: "ed-lang-bracket"
+        L_BRACKET: "ed-lang-bracket",
+        L_ADD_OPT: "ed-add-opt"
     }
-    
-    this.displayUnit = function(txt, d_type) {
+
+    this.getDISPLAY_TYPE = function () {
+        return DISPLAY_TYPE;
+    }
+
+    var displayUnit = function (txt, d_type) {
         this.text = txt;
         this.displayType = typeof d_type !== 'undefined' ? d_type : DISPLAY_TYPE.L_TOKEN;
     }
-    var display_BR_OPEN = new this.displayUnit("(", DISPLAY_TYPE.L_BRACKET);
-    var display_BR_CLOSE = new this.displayUnit(")", DISPLAY_TYPE.L_BRACKET);
+    var display_BR_OPEN = new displayUnit("(", DISPLAY_TYPE.L_BRACKET);
+    var display_BR_CLOSE = new displayUnit(")", DISPLAY_TYPE.L_BRACKET);
 
     /***************************************************/
     this.descriptor = function (nNext, nChlds, ed_type) {
@@ -66,6 +79,7 @@ var jc_DomainQueryModel = function (domModel) {
             return chidren;
         }
     }
+    /***************************************************/
     var terminate = new this.descriptor(false, false);
 
     /***************************************************/
@@ -76,8 +90,11 @@ var jc_DomainQueryModel = function (domModel) {
     this.firstLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
     this.firstLine.setNext({
         createMatch: {
-            displayPref: [new this.displayUnit("createMatch"), display_BR_OPEN],
+            proposal: "createMatch", // optional
+            displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
+            // optional display infix
+            //displayInf: [new this.displayUnit("+")]
             next: modelTypesAsChildren
         }
     });
@@ -86,7 +103,8 @@ var jc_DomainQueryModel = function (domModel) {
     this.followLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
     this.followLine.setNext({
         createMatch: {
-            displayPref: [new this.displayUnit("createMatch"), display_BR_OPEN],
+            proposal: "createMatch", // optional
+            displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             next: modelTypesAsChildren
         }

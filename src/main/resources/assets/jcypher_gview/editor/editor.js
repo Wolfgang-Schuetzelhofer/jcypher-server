@@ -96,25 +96,39 @@
                     displayPref: mdlElem.displayPref,
                     displayPostf: mdlElem.displayPostf
                 }
-                var pref = edElem.uiElements[0].previousElementSibling;
+                var prev = edElem.uiElements[0].previousElementSibling;
                 var par = edElem.uiElements[0].parentElement;
                 edElem.elemType = ELEM_TYPE.LANG_ELEM;
                 $.each(edElem.uiElements, function (idx, val) {
                     val.remove();
                 });
-                if (edElem.display.displayPref != null) {
-                    $.each(edElem.display.displayPref, function(idx, val){
-                        var add = $(ui_fact.createUIElem("Token", null, null, val.displayType));
-                        add.text(val.text);
-                        add[0].jc_editElem = edElem;
-                        if (pref != null)
-                            $(prev).insertAfter(add);
-                        else
-                            $(par).append(add);
-                    })
+                if (edElem.display.displayPref != null)
+                    prev = insertUIElements(edElem.display.displayPref, prev, par, edElem);
+                
+                var chlds = edElem.modelElem.getChildren();
+                if (chlds != null) {
+                    
                 }
+
+                if (edElem.display.displayPostf != null)
+                    prev = insertUIElements(edElem.display.displayPostf, prev, par, edElem);
+
             }
             return;
+        }
+
+        var insertUIElements = function (elems, prev, par, edElem) {
+            $.each(elems, function (idx, val) {
+                var add = $(ui_fact.createUIElem("Token", null, null, val.displayType));
+                add.text(val.text);
+                add[0].jc_editElem = edElem;
+                if (prev != null)
+                    add.insertAfter($(prev));
+                else
+                    $(par).append(add);
+                prev = add[0];
+            })
+            return prev;
         }
 
         var showProposal = function (atElem) {
@@ -165,7 +179,8 @@
                 var nxt = mdlElem.getNext();
                 if (nxt != null) {
                     $.each(nxt, function (prop, val) {
-                        selectr.append("<option value='" + idx + "'>" + prop + "</option>");
+                        var propsl = val.proposal != null ? val.proposal : prop;
+                        selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
                         props.push(prop);
                         mdlElems.push(val);
                     });
@@ -195,7 +210,7 @@
         var initStatements = function (stmtContainer) {
             if (content == null) { // empty
                 var sl = ui_fact.createUIElem("StatementLine");
-                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus ed-add-opt");
+                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
                 sl.appendChild(add);
                 startEditElem = new editElement([sl], ELEM_TYPE.LINE, langModel.firstLine); // first line
                 var elem = new editElement([add], ELEM_TYPE.ADD);

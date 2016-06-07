@@ -197,6 +197,22 @@
             var si = this.state.searchContainer.append($("<span class='glyphicon glyphicon-search searchicon'></span>"));
             var nok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-ok sel-ok nok'></span>"));
             var ok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-remove sel-cancel'></span>"));
+            ok.on("click", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                e.stopPropagation();
+                self.finished(0, self); // OK
+            });
+            
+            nok.on("click", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                e.stopPropagation();
+                self.finished(1, self); // CANCEL
+            });
+            
             si.on("click", {
                 self: this
             }, function (e) {
