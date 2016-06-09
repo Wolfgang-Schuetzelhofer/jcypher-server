@@ -5,7 +5,16 @@
 
 .ed-add-opt {
     color: green;
+    background-color: #dff0d8;
     cursor: pointer;
+    padding: 0px 3px 3px 3px;
+}
+
+.ed-add-requ {
+    color: #eb960e;
+    background-color: #f2dede;
+    cursor: pointer;
+    padding: 0px 3px 3px 3px;
 }
 
 .prop-dialog {

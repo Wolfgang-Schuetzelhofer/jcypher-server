@@ -194,23 +194,26 @@
             });
 
             this.state.searchContainer.append(this.state.searchBox);
-            var si = this.state.searchContainer.append($("<span class='glyphicon glyphicon-search searchicon'></span>"));
-            var nok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-ok sel-ok nok'></span>"));
-            var ok = this.state.searchContainer.append($("<span class='glyphicon glyphicon-remove sel-cancel'></span>"));
-            ok.on("click", {
-                self: this
-            }, function (e) {
-                var self = e.data.self;
-                e.stopPropagation();
-                self.finished(0, self); // OK
-            });
-            
+            var si = $("<span class='glyphicon glyphicon-search searchicon'></span>");
+            var nok = $("<span class='glyphicon glyphicon-remove sel-cancel'></span>");
+            var ok = $("<span class='glyphicon glyphicon-ok sel-ok nok'></span>");
+            this.state.searchContainer.append(si);
+            this.state.searchContainer.append(nok);
+            this.state.searchContainer.append(ok);
             nok.on("click", {
                 self: this
             }, function (e) {
                 var self = e.data.self;
                 e.stopPropagation();
                 self.finished(1, self); // CANCEL
+            });
+            
+            ok.on("click", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                e.stopPropagation();
+                self.finished(0, self); // OK
             });
             
             si.on("click", {

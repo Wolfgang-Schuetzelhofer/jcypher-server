@@ -20,7 +20,8 @@
     var ELEM_TYPE = {
         ADD: 0,
         LANG_ELEM: 1,
-        LINE: 2
+        LINE: 2,
+        ASSIGNMENT: 3
     }
 
     /***********************************************/
@@ -98,20 +99,51 @@
                 }
                 var prev = edElem.uiElements[0].previousElementSibling;
                 var par = edElem.uiElements[0].parentElement;
+
+                // add assignment if required
+                var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
+                if (addAss && edElem.isFirstInLine()) {
+                    var assMdl = langModel.createAssignment(mdlElem);
+                    var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
+                    var uis = [ass].concat(createUIElems(assMdl.displayInf));
+                    var assElem = new editElement(uis, ELEM_TYPE.ASSIGNMENT, langModel.firstLine.getChildren()[0]);
+                    $.each(uis, function (idx, val) {
+                        val.jc_editElem = assElem;
+                    })
+                    edElem.insertBeforeMe(assElem);
+                }
+
                 edElem.elemType = ELEM_TYPE.LANG_ELEM;
                 $.each(edElem.uiElements, function (idx, val) {
                     val.remove();
                 });
                 if (edElem.display.displayPref != null)
                     prev = insertUIElements(edElem.display.displayPref, prev, par, edElem);
-                
+
+                var nextAdd = null;
                 var chlds = edElem.modelElem.getChildren();
-                if (chlds != null) {
-                    
+                if (chlds != null && chlds.length > 0) {
+                    var chld = chlds[0];
+                    var requ = (chld.jc_required == null) ? true : chld.jc_required;
+                    var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
+                        langModel.getDISPLAY_TYPE().L_ADD_OPT;
+                    var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
+                    var eElem = new editElement([add], ELEM_TYPE.ADD, chlds[0]);
+                    add.jc_editElem = eElem;
+                    edElem.addChild(eElem);
+                    prev = insertUIElement(add, prev, par);
+                    nextAdd = add;
                 }
 
                 if (edElem.display.displayPostf != null)
                     prev = insertUIElements(edElem.display.displayPostf, prev, par, edElem);
+                var nxt = edElem.modelElem.getNext();
+                if (nxt != null) {
+
+                }
+
+                if (nextAdd != null)
+                    showProposal(nextAdd);
 
             }
             return;
@@ -128,6 +160,25 @@
                     $(par).append(add);
                 prev = add[0];
             })
+            return prev;
+        }
+
+        var createUIElems = function (elems) {
+            var ret = [];
+            for (var i = 0; i < elems.length; i++) {
+                var ui = $(ui_fact.createUIElem("Token", null, null, elems[i].displayType));
+                ui.text(elems[i].text);
+                ret.push(ui[0]);
+            }
+            return ret;
+        }
+
+        var insertUIElement = function (uiElem, prev, par) {
+            if (prev != null)
+                $(uiElem).insertAfter($(prev));
+            else
+                $(par).append(uiElem);
+            prev = uiElem;
             return prev;
         }
 
@@ -168,36 +219,39 @@
 
         // calculate the proposal based on the model
         var fillBody = function (pBody, edElem) {
-            var mdlElem = edElem.calcModelElem(langModel);
-            var sel;
-            var mdlElems = [];
-            var props = [];
-            if (mdlElem.edit_type == langModel.EDIT_TYPE.SELECT) {
+            if (edElem.elemType == ELEM_TYPE.ADD) {
+                var mdlElem = edElem.modelElem;
+                var sel;
+                var mdlElems = [];
+                var props = [];
+
                 sel = ui_fact.createUIElem("ProposalSelect");
                 var selectr = $(sel);
                 var idx = 0;
-                var nxt = mdlElem.getNext();
-                if (nxt != null) {
-                    $.each(nxt, function (prop, val) {
-                        var propsl = val.proposal != null ? val.proposal : prop;
-                        selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
-                        props.push(prop);
-                        mdlElems.push(val);
+                if (mdlElem != null) {
+                    $.each(mdlElem, function (prop, val) {
+                        if (prop != "jc_required") {
+                            var propsl = val.proposal != null ? val.proposal : prop;
+                            selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
+                            props.push(prop);
+                            mdlElems.push(val);
+                            idx++;
+                        }
                     });
                 }
-            } else if (mdlElem.edit_type == langModel.EDIT_TYPE.FILL) {}
 
-            var sl = ui_fact.createUIElem("StatementLine");
-            $(sl).css("width", "30em");
-            sl.appendChild(sel);
-            pBody.appendChild(sl);
-            var opts = {
-                onClose: proposalClosed,
-                modelElements: mdlElems,
-                properties: props,
-                editElement: edElem
-            };
-            $(sl).jctinyselect(opts);
+                var sl = ui_fact.createUIElem("StatementLine");
+                $(sl).css("width", "30em");
+                sl.appendChild(sel);
+                pBody.appendChild(sl);
+                var opts = {
+                    onClose: proposalClosed,
+                    modelElements: mdlElems,
+                    properties: props,
+                    editElement: edElem
+                };
+                $(sl).jctinyselect(opts);
+            }
         }
 
         var hideProposal = function () {
@@ -213,9 +267,9 @@
                 var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
                 sl.appendChild(add);
                 startEditElem = new editElement([sl], ELEM_TYPE.LINE, langModel.firstLine); // first line
-                var elem = new editElement([add], ELEM_TYPE.ADD);
+                var elem = new editElement([add], ELEM_TYPE.ADD, langModel.firstLine.getChildren()[0]);
                 add.jc_editElem = elem;
-                startEditElem.setChild(elem);
+                startEditElem.addChild(elem);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
 
@@ -266,7 +320,7 @@
         var prevConcat = null;
         var prevSibling = null;
         var nextSibling = null;
-        var firstChild = null;
+        var children = null;
         var parent = null;
 
         //public
@@ -277,36 +331,38 @@
         this.tokenName = null;
         this.displayInfo = null;
 
-        this.setChild = function (elem) {
-            firstChild = elem;
+        this.addChild = function (elem) {
+            if (children == null)
+                children = [];
+            children.push(elem);
             elem.parent = this;
         }
-
-        // calculate my model element for the proposal
-        this.calcModelElem = function (lModel) {
-            var mdlElem = null;
-            if (this.elemType == ELEM_TYPE.ADD) {
-                if (this.prevConcat != null) {
-
-                } else if (this.parent != null) {
-                    mdlElem = this.parent.modelElemForChild(this.calcSiblingIdx());
-                }
-            }
-            return mdlElem;
+        
+        this.insertChildBefore(newChild, before) {
+            if (children == null)
+                children = [];
+            var idx = children.indexOf(before);
+            if (idx >= 0)
+                children.splice(idx, 0, newChild);
+            else
+                children.push(newChild);
+            newChild.parent = this;
         }
 
-        this.modelElemForChild = function (idx) {
-            if (this.elemType == ELEM_TYPE.LINE) { // modelElem must be set
-                return this.modelElem;
-            }
-            return null;
+        this.isFirstInLine = function () {
+            return this.prevConcat == null && this.prevSibling == null &&
+                this.parent != null && this.parent.elemType == ELEM_TYPE.LINE;
         }
 
-        this.calcSiblingIdx = function () {
-            var idx = 0;
-            if (this.prevSibling != null)
-                idx = this.prevSibling.calcSiblingIdx() + 1;
-            return idx;
+        this.insertBeforeMe function (edElem) {
+            if (this.prevSibling != null) {
+                this.prevSibling.nextSibling = edElem;
+                edElem.prevSibling = this.prevSibling;
+            }
+            edElem.nextSibling = this;
+            this.prevSibling = edElem;
+            if (this.parent != null)
+                this.parent.insertChildBefore(edElem, this);
         }
     }
 

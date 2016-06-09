@@ -33,17 +33,12 @@ var jc_DomainQueryModel = function (domModel) {
         return [ret];
     }
 
-    //public
-    this.EDIT_TYPE = {
-        SELECT: 0,
-        FILL: 1
-    }
-
     var DISPLAY_TYPE = {
         L_TOKEN: "ed-lang-token",
         L_KEYWORD: "ed-lang-keyword",
         L_BRACKET: "ed-lang-bracket",
-        L_ADD_OPT: "ed-add-opt"
+        L_ADD_OPT: "ed-add-opt",
+        L_ADD_REQU: "ed-add-requ"
     }
 
     this.getDISPLAY_TYPE = function () {
@@ -58,55 +53,65 @@ var jc_DomainQueryModel = function (domModel) {
     var display_BR_CLOSE = new displayUnit(")", DISPLAY_TYPE.L_BRACKET);
 
     /***************************************************/
-    this.descriptor = function (nNext, nChlds, ed_type) {
-        this.edit_type = ed_type;
-        this.needNext = nNext;
-        this.needChildren = nChlds;
+    var descriptor = function () {
+            var next = null;
+            var children = null;
 
-        var next = null;
-        var chidren = null;
-
-        this.setNext = function (nxt) {
-            next = nxt;
+            this.setNext = function (nxt) {
+                next = nxt;
+            }
+            this.getNext = function () {
+                return next;
+            }
+            this.setChildren = function (chlds) {
+                children = chlds;
+            }
+            this.getChildren = function () {
+                return children;
+            }
         }
-        this.getNext = function () {
-            return next;
-        }
-        this.setChildren = function (chlds) {
-            children = chlds;
-        }
-        this.getChildren = function () {
-            return chidren;
-        }
-    }
-    /***************************************************/
-    var terminate = new this.descriptor(false, false);
+        /***************************************************/
+    var terminate = new descriptor();
 
     /***************************************************/
-    var modelTypesAsChildren = new this.descriptor(false, true);
+    var modelTypesAsChildren = new descriptor();
     modelTypesAsChildren.getChildren = getDomainTypes;
 
     /***************************************************/
-    this.firstLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
-    this.firstLine.setNext({
+    this.createAssignment = function (to) {
+        var descr = new descriptor();
+        descr.setNext(to);
+        var ass = {
+            displayInf: [new displayUnit(" = ")],
+            next: descr
+        };
+        return ass;
+    }
+
+    /***************************************************/
+    this.firstLine = new descriptor();
+    this.firstLine.setChildren([{
+        jc_required: false, //optional, default: true
         createMatch: {
             proposal: "createMatch", // optional
+            assignIfFirst: true, // optional, default: false
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             // optional display infix
             //displayInf: [new this.displayUnit("+")]
             next: modelTypesAsChildren
         }
-    });
+    }]);
 
     /***************************************************/
-    this.followLine = new this.descriptor(true, false, this.EDIT_TYPE.SELECT);
-    this.followLine.setNext({
+    this.followLine = new descriptor();
+    this.followLine.setChildren([{
         createMatch: {
             proposal: "createMatch", // optional
+            assignIfFirst: true,
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             next: modelTypesAsChildren
         }
-    });
+    }]);
 }
