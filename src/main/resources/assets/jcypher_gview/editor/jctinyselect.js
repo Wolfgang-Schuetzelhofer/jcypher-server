@@ -42,7 +42,13 @@
 
             this.readSelect($el);
             this.createSelect($el);
-
+            var chlds = this.state.itemContainer.children();
+            if (chlds.length == 1) {
+                var item = chlds.eq(0);
+                var txt = item.text();
+                this.state.searchBox.val(txt);
+                this.setSelectedValue(item.attr("data-value"));
+            }
         },
 
         createSelect: function ($el) {
@@ -207,7 +213,7 @@
                 e.stopPropagation();
                 self.finished(1, self); // CANCEL
             });
-            
+
             ok.on("click", {
                 self: this
             }, function (e) {
@@ -215,7 +221,7 @@
                 e.stopPropagation();
                 self.finished(0, self); // OK
             });
-            
+
             si.on("click", {
                 self: this
             }, function (e) {
@@ -259,7 +265,7 @@
 
         doFilter: function (sval, self) {
             self.state.filteredItemData = self.state.originalItemData.filter(function (item) {
-                return item.text.toLowerCase().indexOf(sval) >= 0 ? true : false;
+                return item.text.toLowerCase().indexOf(sval.toLowerCase()) >= 0 ? true : false;
             });
             self.state.filtered = true;
         },
@@ -275,7 +281,7 @@
                 if (type == 0) {
                     var idx = parseInt(self.state.selectedValue);
                     self.config.onClose(type, self.config.modelElements[idx], self.config.properties[idx],
-                                       self.config.editElement);
+                        self.config.editElement);
                 } else
                     self.config.onClose(type, null, null, self.config.editElement);
             }

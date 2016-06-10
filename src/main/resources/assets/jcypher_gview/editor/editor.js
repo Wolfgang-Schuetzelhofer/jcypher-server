@@ -17,13 +17,6 @@
 ! function () {
     //alert("jc_ui executing");
 
-    var ELEM_TYPE = {
-        ADD: 0,
-        LANG_ELEM: 1,
-        LINE: 2,
-        ASSIGNMENT: 3
-    }
-
     /***********************************************/
     var editorFactory = function (importId) {
         //private
@@ -91,69 +84,67 @@
         var proposalClosed = function (type, mdlElem, prop, edElem) {
             hideProposal();
             if (type == 0) { // OK
-                edElem.modelElem = mdlElem.next;
-                edElem.tokenName = prop;
-                edElem.display = {
-                    displayPref: mdlElem.displayPref,
-                    displayPostf: mdlElem.displayPostf
+                if (edElem.elemType == langModel.getELEM_TYPE().ADD) { // new content added
+                    edElem.elemType = edElem.modelElem.jc__elemType;
+                    edElem.tokenName = prop;
+                    if (edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM) {
+                        edElem.modelElem = mdlElem.next;
+                        var prev = edElem.uiElements[0].previousElementSibling;
+                        var par = edElem.uiElements[0].parentElement;
+
+                        var nextAdd = null;
+                        // add assignment if required
+                        var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
+                        if (addAss && edElem.isFirstInLine()) {
+                            var assMdl = langModel.createAssignment(mdlElem);
+                            var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
+                            nextAdd = ass;
+                            var uis = [ass].concat(createUIElems(assMdl.displayInf));
+                            var assElem = new editElement(uis, langModel.getELEM_TYPE().ADD, assMdl);
+                            edElem.insertBeforeMe(assElem);
+                            prev = insertUIElements(uis, prev, par);
+                        }
+
+                        $.each(edElem.uiElements, function (idx, val) {
+                            val.jc_editElem = null;
+                            val.remove();
+                        });
+                        if (mdlElem.displayPref != null)
+                            prev = createInsertUIElements(mdlElem.displayPref, prev, par, edElem);
+
+                        var chlds = edElem.modelElem.getChildren();
+                        if (chlds != null && chlds.length > 0) {
+                            var chld = chlds[0];
+                            var requ = chld.jc__required;
+                            var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
+                                langModel.getDISPLAY_TYPE().L_ADD_OPT;
+                            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
+                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, chlds[0]);
+                            edElem.addChild(eElem);
+                            prev = insertUIElements([add], prev, par);
+                        }
+
+                        if (mdlElem.displayPostf != null)
+                            prev = createInsertUIElements(mdlElem.displayPostf, prev, par, edElem);
+                        var nxt = edElem.modelElem.getNext();
+                        if (nxt != null) {
+
+                        }
+
+                        if (nextAdd != null)
+                            showProposal(nextAdd);
+                    } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
+                        return;
+                    }
                 }
-                var prev = edElem.uiElements[0].previousElementSibling;
-                var par = edElem.uiElements[0].parentElement;
-
-                // add assignment if required
-                var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
-                if (addAss && edElem.isFirstInLine()) {
-                    var assMdl = langModel.createAssignment(mdlElem);
-                    var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
-                    var uis = [ass].concat(createUIElems(assMdl.displayInf));
-                    var assElem = new editElement(uis, ELEM_TYPE.ASSIGNMENT, langModel.firstLine.getChildren()[0]);
-                    $.each(uis, function (idx, val) {
-                        val.jc_editElem = assElem;
-                    })
-                    edElem.insertBeforeMe(assElem);
-                }
-
-                edElem.elemType = ELEM_TYPE.LANG_ELEM;
-                $.each(edElem.uiElements, function (idx, val) {
-                    val.remove();
-                });
-                if (edElem.display.displayPref != null)
-                    prev = insertUIElements(edElem.display.displayPref, prev, par, edElem);
-
-                var nextAdd = null;
-                var chlds = edElem.modelElem.getChildren();
-                if (chlds != null && chlds.length > 0) {
-                    var chld = chlds[0];
-                    var requ = (chld.jc_required == null) ? true : chld.jc_required;
-                    var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
-                        langModel.getDISPLAY_TYPE().L_ADD_OPT;
-                    var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
-                    var eElem = new editElement([add], ELEM_TYPE.ADD, chlds[0]);
-                    add.jc_editElem = eElem;
-                    edElem.addChild(eElem);
-                    prev = insertUIElement(add, prev, par);
-                    nextAdd = add;
-                }
-
-                if (edElem.display.displayPostf != null)
-                    prev = insertUIElements(edElem.display.displayPostf, prev, par, edElem);
-                var nxt = edElem.modelElem.getNext();
-                if (nxt != null) {
-
-                }
-
-                if (nextAdd != null)
-                    showProposal(nextAdd);
-
             }
             return;
         }
 
-        var insertUIElements = function (elems, prev, par, edElem) {
+        var createInsertUIElements = function (elems, prev, par, edElem) {
             $.each(elems, function (idx, val) {
                 var add = $(ui_fact.createUIElem("Token", null, null, val.displayType));
                 add.text(val.text);
-                add[0].jc_editElem = edElem;
                 if (prev != null)
                     add.insertAfter($(prev));
                 else
@@ -173,12 +164,14 @@
             return ret;
         }
 
-        var insertUIElement = function (uiElem, prev, par) {
-            if (prev != null)
-                $(uiElem).insertAfter($(prev));
-            else
-                $(par).append(uiElem);
-            prev = uiElem;
+        var insertUIElements = function (uiElems, prev, par) {
+            $.each(uiElems, function (idx, val) {
+                if (prev != null)
+                    $(val).insertAfter($(prev));
+                else
+                    $(par).append(val);
+                prev = val;
+            })
             return prev;
         }
 
@@ -219,8 +212,8 @@
 
         // calculate the proposal based on the model
         var fillBody = function (pBody, edElem) {
-            if (edElem.elemType == ELEM_TYPE.ADD) {
-                var mdlElem = edElem.modelElem;
+            var mdlElem = edElem.modelElem;
+            if (mdlElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM) {
                 var sel;
                 var mdlElems = [];
                 var props = [];
@@ -230,7 +223,7 @@
                 var idx = 0;
                 if (mdlElem != null) {
                     $.each(mdlElem, function (prop, val) {
-                        if (prop != "jc_required") {
+                        if (prop.indexOf("jc__") != 0) {
                             var propsl = val.proposal != null ? val.proposal : prop;
                             selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
                             props.push(prop);
@@ -251,6 +244,15 @@
                     editElement: edElem
                 };
                 $(sl).jctinyselect(opts);
+            } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
+                var fill = ui_fact.createUIElem("ProposalFill");
+                $(fill).css("width", "20em");
+                pBody.appendChild(fill);
+                var opts = {
+                    onClose: proposalClosed,
+                    editElement: edElem
+                };
+                new jcinput(fill, opts).init();
             }
         }
 
@@ -266,9 +268,8 @@
                 var sl = ui_fact.createUIElem("StatementLine");
                 var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
                 sl.appendChild(add);
-                startEditElem = new editElement([sl], ELEM_TYPE.LINE, langModel.firstLine); // first line
-                var elem = new editElement([add], ELEM_TYPE.ADD, langModel.firstLine.getChildren()[0]);
-                add.jc_editElem = elem;
+                startEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, langModel.firstLine); // first line
+                var elem = new editElement([add], langModel.getELEM_TYPE().ADD, langModel.firstLine.getChildren()[0]);
                 startEditElem.addChild(elem);
                 ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
             } else { // has content
@@ -324,12 +325,16 @@
         var parent = null;
 
         //public
+        var self = this;
+        if (uiElems != null)
+            $.each(uiElems, function (idx, val) {
+                val.jc_editElem = self
+            });
         this.uiElements = uiElems;
         this.elemType = el_type;
         // only initialized on line
         this.modelElem = mdlElem;
         this.tokenName = null;
-        this.displayInfo = null;
 
         this.addChild = function (elem) {
             if (children == null)
@@ -337,8 +342,8 @@
             children.push(elem);
             elem.parent = this;
         }
-        
-        this.insertChildBefore(newChild, before) {
+
+        this.insertChildBefore = function (newChild, before) {
             if (children == null)
                 children = [];
             var idx = children.indexOf(before);
@@ -351,10 +356,10 @@
 
         this.isFirstInLine = function () {
             return this.prevConcat == null && this.prevSibling == null &&
-                this.parent != null && this.parent.elemType == ELEM_TYPE.LINE;
+                this.parent != null && this.parent.elemType == "LINE";
         }
 
-        this.insertBeforeMe function (edElem) {
+        this.insertBeforeMe = function (edElem) {
             if (this.prevSibling != null) {
                 this.prevSibling.nextSibling = edElem;
                 edElem.prevSibling = this.prevSibling;

@@ -1,0 +1,32 @@
+.jcinput {
+    position: relative;
+}
+
+.jc-ctrl {
+    height: 2em;
+    background-color: #f2dede;
+    padding-right: 3em;
+}
+
+.jc-ctrl.ok {
+    background-color: #dff0d8;
+}
+
+.jcinput .sel-ok {
+    position: absolute;
+    top: 6px;
+    right: 2em;
+    color: #afacac;
+}
+.jcinput .sel-ok.ok {
+    color: green;
+    cursor: pointer;
+}
+
+.jcinput .sel-cancel {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    color: red;
+}

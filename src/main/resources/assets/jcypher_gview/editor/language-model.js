@@ -19,7 +19,7 @@ var jc_DomainQueryModel = function (domModel) {
     //private
     var domainModel = domModel;
     var getDomainTypes = function () {
-        var ret = {};
+        var ret = new Descriptor();
         $.each(domainModel.types, function (idx, typ) {
             var obj = {};
             var spl = typ.name.split(".");
@@ -41,8 +41,19 @@ var jc_DomainQueryModel = function (domModel) {
         L_ADD_REQU: "ed-add-requ"
     }
 
+    var ELEM_TYPE = {
+        ADD: "ADD",
+        LANG_ELEM: "LANG_ELEM",
+        LINE: "LINE",
+        ASSIGNMENT: "ASSIGNMENT"
+    }
+
     this.getDISPLAY_TYPE = function () {
         return DISPLAY_TYPE;
+    }
+
+    this.getELEM_TYPE = function () {
+        return ELEM_TYPE;
     }
 
     var displayUnit = function (txt, d_type) {
@@ -53,7 +64,7 @@ var jc_DomainQueryModel = function (domModel) {
     var display_BR_CLOSE = new displayUnit(")", DISPLAY_TYPE.L_BRACKET);
 
     /***************************************************/
-    var descriptor = function () {
+    var Structure = function () {
             var next = null;
             var children = null;
 
@@ -71,28 +82,50 @@ var jc_DomainQueryModel = function (domModel) {
             }
         }
         /***************************************************/
-    var terminate = new descriptor();
+    var terminate = new Structure();
 
     /***************************************************/
-    var modelTypesAsChildren = new descriptor();
+    var Descriptor = function (elemType, requ) {
+            this.jc__required = typeof requ !== 'undefined' ? requ : true;
+            this.jc__elemType = typeof elemType !== 'undefined' ? elemType : ELEM_TYPE.LANG_ELEM;
+            this.jc__addElement = function (key, value) {
+                this[key] = value;
+                return this;
+            }
+        }
+        /***************************************************/
+
+    /***************************************************/
+    var modelTypesAsChildren = new Structure();
     modelTypesAsChildren.getChildren = getDomainTypes;
 
     /***************************************************/
     this.createAssignment = function (to) {
-        var descr = new descriptor();
+        var struct = new Structure();
+        struct.setNext(to);
+        var descr = new Descriptor(ELEM_TYPE.ASSIGNMENT);
+        descr.displayInf = [new displayUnit(" = ")];
+        descr.next = struct;
+        return descr;
+    }
+
+    /*this.createAssignment_1 = function (to) {
+        var descr = new Structure();
         descr.setNext(to);
         var ass = {
             displayInf: [new displayUnit(" = ")],
             next: descr
         };
         return ass;
-    }
+    }*/
 
     /***************************************************/
-    this.firstLine = new descriptor();
-    this.firstLine.setChildren([{
-        jc_required: false, //optional, default: true
-        createMatch: {
+    this.firstLine = new Structure();
+    this.firstLine.setChildren([
+        new Descriptor(
+            ELEM_TYPE.LANG_ELEM, false).
+
+            jc__addElement("createMatch", {
             proposal: "createMatch", // optional
             assignIfFirst: true, // optional, default: false
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
@@ -100,18 +133,21 @@ var jc_DomainQueryModel = function (domModel) {
             // optional display infix
             //displayInf: [new this.displayUnit("+")]
             next: modelTypesAsChildren
-        }
-    }]);
+        })
+    ]);
 
     /***************************************************/
-    this.followLine = new descriptor();
-    this.followLine.setChildren([{
-        createMatch: {
+    this.followLine = new Structure();
+    this.followLine.setChildren([
+        new Descriptor(
+            ELEM_TYPE.LANG_ELEM, false).
+
+            jc__addElement("createMatch", {
             proposal: "createMatch", // optional
-            assignIfFirst: true,
+            assignIfFirst: true, // optional, default: false
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             next: modelTypesAsChildren
-        }
-    }]);
+        })
+    ]);
 }
