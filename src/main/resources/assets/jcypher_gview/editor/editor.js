@@ -87,32 +87,34 @@
                 if (edElem.elemType == langModel.getELEM_TYPE().ADD) { // new content added
                     edElem.elemType = edElem.modelElem.jc__elemType;
                     edElem.tokenName = prop;
-                    if (edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM) {
-                        edElem.modelElem = mdlElem.next;
-                        var prev = edElem.uiElements[0].previousElementSibling;
-                        var par = edElem.uiElements[0].parentElement;
-
-                        var nextAdd = null;
+                    var prev = $(edElem.uiElements[0]);
+                    var par = edElem.uiElements[0].parentElement;
+                    var anchr = $("<span>Hi Anchor</span>");
+                    anchr.insertBefore(prev);
+                    prev = anchr;
+                    if (edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
+                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE) {
+                        edElem.modelElem = mdlElem;
                         // add assignment if required
                         var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
                         if (addAss && edElem.isFirstInLine()) {
                             var assMdl = langModel.createAssignment(mdlElem);
                             var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
-                            nextAdd = ass;
                             var uis = [ass].concat(createUIElems(assMdl.displayInf));
                             var assElem = new editElement(uis, langModel.getELEM_TYPE().ADD, assMdl);
                             edElem.insertBeforeMe(assElem);
-                            prev = insertUIElements(uis, prev, par);
+                            prev = insertUIElements(uis, prev);
                         }
 
                         $.each(edElem.uiElements, function (idx, val) {
                             val.jc_editElem = null;
                             val.remove();
                         });
+                        edElem.uiElements = []; //clear
                         if (mdlElem.displayPref != null)
-                            prev = createInsertUIElements(mdlElem.displayPref, prev, par, edElem);
+                            prev = createInsertUIElements(mdlElem.displayPref, prev, edElem);
 
-                        var chlds = edElem.modelElem.getChildren();
+                        var chlds = edElem.modelElem.next.getChildren();
                         if (chlds != null && chlds.length > 0) {
                             var chld = chlds[0];
                             var requ = chld.jc__required;
@@ -121,35 +123,31 @@
                             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
                             var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, chlds[0]);
                             edElem.addChild(eElem);
-                            prev = insertUIElements([add], prev, par);
+                            prev = insertUIElements([add], prev);
                         }
 
                         if (mdlElem.displayPostf != null)
-                            prev = createInsertUIElements(mdlElem.displayPostf, prev, par, edElem);
-                        var nxt = edElem.modelElem.getNext();
+                            prev = createInsertUIElements(mdlElem.displayPostf, prev, edElem);
+                        var nxt = edElem.modelElem.next.getNext();
                         if (nxt != null) {
 
                         }
-
-                        if (nextAdd != null)
-                            showProposal(nextAdd);
                     } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
                         return;
                     }
+                    anchr.remove();
                 }
             }
             return;
         }
 
-        var createInsertUIElements = function (elems, prev, par, edElem) {
+        var createInsertUIElements = function (elems, prev, edElem) {
             $.each(elems, function (idx, val) {
                 var add = $(ui_fact.createUIElem("Token", null, null, val.displayType));
                 add.text(val.text);
-                if (prev != null)
-                    add.insertAfter($(prev));
-                else
-                    $(par).append(add);
-                prev = add[0];
+                edElem.uiElements.push(add[0]);
+                add.insertAfter(prev);
+                prev = add;
             })
             return prev;
         }
@@ -164,13 +162,10 @@
             return ret;
         }
 
-        var insertUIElements = function (uiElems, prev, par) {
+        var insertUIElements = function (uiElems, prev) {
             $.each(uiElems, function (idx, val) {
-                if (prev != null)
-                    $(val).insertAfter($(prev));
-                else
-                    $(par).append(val);
-                prev = val;
+                $(val).insertAfter(prev);
+                prev = $(val);
             })
             return prev;
         }
@@ -213,7 +208,8 @@
         // calculate the proposal based on the model
         var fillBody = function (pBody, edElem) {
             var mdlElem = edElem.modelElem;
-            if (mdlElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM) {
+            if (mdlElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
+                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE) {
                 var sel;
                 var mdlElems = [];
                 var props = [];

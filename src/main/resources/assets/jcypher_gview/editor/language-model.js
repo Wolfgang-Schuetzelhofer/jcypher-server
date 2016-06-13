@@ -19,16 +19,20 @@ var jc_DomainQueryModel = function (domModel) {
     //private
     var domainModel = domModel;
     var getDomainTypes = function () {
-        var ret = new Descriptor();
+        var ret = new Descriptor(ELEM_TYPE.REF_MODEL_TYPE);
         $.each(domainModel.types, function (idx, typ) {
-            var obj = {};
             var spl = typ.name.split(".");
             var displ = spl[spl.length - 1];
+            var obj = {
+                proposal: displ,
+                displayPref: [new displayUnit(displ)],
+                next: terminate
+            };
+            /*
             obj.proposal = displ;
             obj.displayPref = [new displayUnit(displ)];
-            obj.next = terminate;
+            obj.next = terminate;*/
             ret[typ.name] = obj;
-            return;
         });
         return [ret];
     }
@@ -37,13 +41,15 @@ var jc_DomainQueryModel = function (domModel) {
         L_TOKEN: "ed-lang-token",
         L_KEYWORD: "ed-lang-keyword",
         L_BRACKET: "ed-lang-bracket",
-        L_ADD_OPT: "ed-add-opt",
-        L_ADD_REQU: "ed-add-requ"
+        L_ADD: "ed-add",
+        L_ADD_OPT: "ed-add ed-add-opt",
+        L_ADD_REQU: "ed-add ed-add-requ"
     }
 
     var ELEM_TYPE = {
         ADD: "ADD",
         LANG_ELEM: "LANG_ELEM",
+        REF_MODEL_TYPE: "REF_MODEL_TYPE",
         LINE: "LINE",
         ASSIGNMENT: "ASSIGNMENT"
     }
