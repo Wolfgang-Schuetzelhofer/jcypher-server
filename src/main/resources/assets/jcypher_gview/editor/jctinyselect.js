@@ -58,6 +58,21 @@
             css({
                 width: $el.css("width")
             });
+            this.state.container.
+            on("keydown", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                switch (e.which) {
+                case 39: // right
+                        self.finished(2, self); // skip
+                    break;
+
+                default:
+                    return; // exit this handler for other keys
+                }
+                e.preventDefault(); // prevent the default action (scroll / move caret)
+            });
 
             // Add search
             this.createSearch();
@@ -203,8 +218,10 @@
             var si = $("<span class='glyphicon glyphicon-search searchicon'></span>");
             var nok = $("<span class='glyphicon glyphicon-remove sel-cancel'></span>");
             var ok = $("<span class='glyphicon glyphicon-ok sel-ok nok'></span>");
+            var skip = $("<span class='glyphicon glyphicon-arrow-right sel-skip'></span>");
             this.state.searchContainer.append(si);
             this.state.searchContainer.append(nok);
+            this.state.searchContainer.append(skip);
             this.state.searchContainer.append(ok);
             nok.on("click", {
                 self: this
@@ -220,6 +237,14 @@
                 var self = e.data.self;
                 e.stopPropagation();
                 self.finished(0, self); // OK
+            });
+            
+            skip.on("click", {
+                self: this
+            }, function (e) {
+                var self = e.data.self;
+                e.stopPropagation();
+                self.finished(2, self); // SKIP
             });
 
             si.on("click", {
@@ -273,7 +298,7 @@
         /* ******************************************************************* *
          * Event handlers
          * ******************************************************************* */
-        // type: 0..OK, 1..CANCEL
+        // type: 0..OK, 1..CANCEL, 2..SKIP
         finished: function (type, self) {
             if (type == 0 && self.state.selectedValue == -1)
                 return;
@@ -331,9 +356,17 @@
 
                 self.createItems();
                 var val = -1;
-                if (self.state.filteredItemData.length == 1) {
-                    var itm = self.state.filteredItemData[0];
-                    val = (itm.text == sval) ? itm.val : -1;
+
+                var chlds = self.state.itemContainer.children();
+                if (chlds.length == 1) {
+                    var item = chlds.eq(0);
+                    var txt = item.text();
+                    val = item.attr("data-value");
+                    if (c == 8 || c == 46) { // 8..backspace, delete..46
+                        //allow to drop down
+                        val = (txt == sval) ? val : -1;
+                    } else
+                        self.state.searchBox.val(txt);
                 }
                 self.setSelectedValue(val);
                 if (val == -1)

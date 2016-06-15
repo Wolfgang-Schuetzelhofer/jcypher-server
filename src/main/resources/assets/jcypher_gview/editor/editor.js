@@ -80,7 +80,7 @@
         }
 
         //private
-        // type: 0..OK, 1..CANCEL; value: id of selected
+        // type: 0..OK, 1..CANCEL, 2..SKIP; value: id of selected
         var proposalClosed = function (type, mdlElem, prop, edElem) {
             hideProposal();
             if (type == 0) { // OK
@@ -98,7 +98,7 @@
                         // add assignment if required
                         var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
                         if (addAss && edElem.isFirstInLine()) {
-                            var assMdl = langModel.createAssignment(mdlElem);
+                            var assMdl = langModel.createAssignment();
                             var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
                             var uis = [ass].concat(createUIElems(assMdl.displayInf));
                             var assElem = new editElement(uis, langModel.getELEM_TYPE().ADD, assMdl);
@@ -133,12 +133,30 @@
 
                         }
                     } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
-                        return;
+                        var add = $(edElem.uiElements[0]);
+                        add.removeClass();
+                        add.addClass(mdlElem.tokenClazz);
+                        add.text(edElem.tokenName);
                     }
-                    anchr.remove();
+                    editNext(anchr, anchr);
                 }
+            } else if (type == 2) { // SKIP
+                editNext($(edElem.uiElements[0]), null);
             }
             return;
+        }
+
+        var editNext = function (strt, toRemove) {
+            var nextAdd = strt.nextAll("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
+            if (nextAdd.length == 0) {
+                nextAdd = $(strt[0].parentElement)
+                    .children("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
+            }
+            if (toRemove != null)
+                toRemove.remove();
+            if (nextAdd.length > 0) {
+                showProposal(nextAdd[0]);
+            }
         }
 
         var createInsertUIElements = function (elems, prev, edElem) {
@@ -230,7 +248,7 @@
                 }
 
                 var sl = ui_fact.createUIElem("StatementLine");
-                $(sl).css("width", "30em");
+                $(sl).css("width", "25em");
                 sl.appendChild(sel);
                 pBody.appendChild(sl);
                 var opts = {
@@ -242,7 +260,7 @@
                 $(sl).jctinyselect(opts);
             } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
                 var fill = ui_fact.createUIElem("ProposalFill");
-                $(fill).css("width", "20em");
+                $(fill).css("width", "25em");
                 pBody.appendChild(fill);
                 var opts = {
                     onClose: proposalClosed,

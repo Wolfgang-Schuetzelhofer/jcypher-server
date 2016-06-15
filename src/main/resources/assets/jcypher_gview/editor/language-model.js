@@ -106,24 +106,13 @@ var jc_DomainQueryModel = function (domModel) {
     modelTypesAsChildren.getChildren = getDomainTypes;
 
     /***************************************************/
-    this.createAssignment = function (to) {
-        var struct = new Structure();
-        struct.setNext(to);
+    this.createAssignment = function () {
         var descr = new Descriptor(ELEM_TYPE.ASSIGNMENT);
         descr.displayInf = [new displayUnit(" = ")];
-        descr.next = struct;
+        descr.tokenClazz = DISPLAY_TYPE.L_TOKEN;
+        descr.next = null;
         return descr;
     }
-
-    /*this.createAssignment_1 = function (to) {
-        var descr = new Structure();
-        descr.setNext(to);
-        var ass = {
-            displayInf: [new displayUnit(" = ")],
-            next: descr
-        };
-        return ass;
-    }*/
 
     /***************************************************/
     this.firstLine = new Structure();

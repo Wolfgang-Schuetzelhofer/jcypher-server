@@ -51,7 +51,7 @@
 .tinyselect .sel-ok {
     position: absolute;
     top: 6px;
-	right: 2em;
+	right: 3.5em;
 }
 .tinyselect .sel-ok.nok {
     color: #afacac;
@@ -64,11 +64,16 @@
     cursor: pointer;
     position: absolute;
     top: 6px;
-	right: 8px;
+	right: .5em;
     color: red;
 }
-
-
+.tinyselect .sel-skip {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+	right: 2em;
+    color: green;
+}
 
 
 

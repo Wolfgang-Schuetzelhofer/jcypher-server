@@ -15,7 +15,7 @@
 .jcinput .sel-ok {
     position: absolute;
     top: 6px;
-    right: 2em;
+    right: 3.5em;
     color: #afacac;
 }
 .jcinput .sel-ok.ok {
@@ -27,6 +27,13 @@
     cursor: pointer;
     position: absolute;
     top: 6px;
-    right: 8px;
+    right: .5em;
     color: red;
+}
+.jcinput .sel-skip {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+	right: 2em;
+    color: green;
 }

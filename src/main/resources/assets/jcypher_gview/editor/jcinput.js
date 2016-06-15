@@ -23,7 +23,9 @@ function jcinput(elem, opts) {
         var ctrl = container.children(".jc-ctrl");
         var nok = $("<span class='glyphicon glyphicon-remove sel-cancel'></span>");
         var ok = $("<span class='glyphicon glyphicon-ok sel-ok nok'></span>");
+        var skip = $("<span class='glyphicon glyphicon-arrow-right sel-skip'></span>");
         container.append(nok);
+        container.append(skip);
         container.append(ok);
         nok.on("click", function (e) {
             finished(1); // CANCEL
@@ -31,6 +33,10 @@ function jcinput(elem, opts) {
 
         ok.on("click", function (e) {
             finished(0); // OK
+        });
+        
+        skip.on("click", function (e) {
+            finished(2); // SKIP
         });
 
         ctrl.on("keydown", function (e) {
@@ -42,6 +48,7 @@ function jcinput(elem, opts) {
                 break;
 
             case 39: // right
+                finished(2);
                 break;
 
             case 40: // down
@@ -74,7 +81,7 @@ function jcinput(elem, opts) {
     // type: 0..OK, 1..CANCEL
     var finished = function (type) {
         var val = container.children(".jc-ctrl").val();
-        if (type == 1 || (type == 0 && val.length > 0))
+        if (type == 1 || type == 2 || (type == 0 && val.length > 0))
             options.onClose(type, options.editElement.modelElem, val,
                 options.editElement);
     }
