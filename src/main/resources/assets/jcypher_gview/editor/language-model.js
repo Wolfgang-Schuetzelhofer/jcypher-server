@@ -18,7 +18,16 @@
 var jc_DomainQueryModel = function (domModel) {
     //private
     var domainModel = domModel;
-    var getDomainTypes = function () {
+
+    var returnFirstChildResult = function (editElem) {
+        return editElem.children[0].getReturnValue();
+    }
+
+    var returnDomainType = function (editElem) {
+        return editElem.modelElem.sourceElement;
+    }
+
+    var getDomainTypes = function (editElem) {
         var ret = new Descriptor(ELEM_TYPE.REF_MODEL_TYPE);
         $.each(domainModel.types, function (idx, typ) {
             var spl = typ.name.split(".");
@@ -26,21 +35,56 @@ var jc_DomainQueryModel = function (domModel) {
             var obj = {
                 proposal: displ,
                 displayPref: [new displayUnit(displ)],
+                sourceElement: typ,
+                returnMethod: returnDomainType,
                 next: terminate
             };
-            /*
-            obj.proposal = displ;
-            obj.displayPref = [new displayUnit(displ)];
-            obj.next = terminate;*/
             ret[typ.name] = obj;
         });
         return [ret];
+    }
+
+    var getDOMatches = function (editElem) {
+        var ass = editElem.collectAssignments();
+        var ret = new Descriptor(ELEM_TYPE.REF_VARIABLE);
+        $.each(ass, function (idx, edElem) {
+            var obj = {
+                proposal: edElem.tokenName,
+                displayPref: [new displayUnit(edElem.tokenName)],
+                sourceElement: edElem,
+                next: modelFields
+            };
+            ret[edElem.tokenName] = obj;
+        });
+        return [ret];
+    }
+
+    var getModelFields = function (editElem) {
+        if (editElem.elemType == ELEM_TYPE.REF_VARIABLE) {
+            var ass = editElem.modelElem.sourceElement;
+            var assigned = ass.nextSibling;
+            assigned = assigned.getLastConcat();
+            var typ = assigned.getReturnValue();
+            var ret = new Descriptor(ELEM_TYPE.REF_MODEL_TYPE);
+            $.each(typ.fields, function (idx, fld) {
+                var obj = {
+                    proposal: fld.name,
+                    displayPref: [new displayUnit(".", DISPLAY_TYPE.L_SEPARATOR),
+                                  new displayUnit(fld.name)],
+                    sourceElement: fld,
+                    next: terminate
+                };
+                ret[fld.name] = obj;
+            });
+        }
+        return ret;
     }
 
     var DISPLAY_TYPE = {
         L_TOKEN: "ed-lang-token",
         L_KEYWORD: "ed-lang-keyword",
         L_BRACKET: "ed-lang-bracket",
+        L_SEPARATOR: "ed-lang-sep",
         L_ADD: "ed-add",
         L_ADD_OPT: "ed-add ed-add-opt",
         L_ADD_REQU: "ed-add ed-add-requ"
@@ -50,6 +94,7 @@ var jc_DomainQueryModel = function (domModel) {
         ADD: "ADD",
         LANG_ELEM: "LANG_ELEM",
         REF_MODEL_TYPE: "REF_MODEL_TYPE",
+        REF_VARIABLE: "REF_VARIABLE",
         LINE: "LINE",
         ASSIGNMENT: "ASSIGNMENT"
     }
@@ -106,6 +151,14 @@ var jc_DomainQueryModel = function (domModel) {
     modelTypesAsChildren.getChildren = getDomainTypes;
 
     /***************************************************/
+    var doMatchesAsChildren = new Structure();
+    doMatchesAsChildren.getChildren = getDOMatches;
+
+    /***************************************************/
+    var modelFields = new Structure();
+    modelFields.getNext = getModelFields;
+
+    /***************************************************/
     this.createAssignment = function () {
         var descr = new Descriptor(ELEM_TYPE.ASSIGNMENT);
         descr.displayInf = [new displayUnit(" = ")];
@@ -123,6 +176,7 @@ var jc_DomainQueryModel = function (domModel) {
             jc__addElement("createMatch", {
             proposal: "createMatch", // optional
             assignIfFirst: true, // optional, default: false
+            returnMethod: returnFirstChildResult, // optional, default return the editElement itself
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             // optional display infix
@@ -140,9 +194,16 @@ var jc_DomainQueryModel = function (domModel) {
             jc__addElement("createMatch", {
             proposal: "createMatch", // optional
             assignIfFirst: true, // optional, default: false
+            returnMethod: returnFirstChildResult, // optional, default return the editElement itself
             displayPref: [new displayUnit("createMatch"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
             next: modelTypesAsChildren
+        }).
+            jc__addElement("WHERE", {
+            proposal: "WHERE", // optional
+            displayPref: [new displayUnit("WHERE"), display_BR_OPEN],
+            displayPostf: [display_BR_CLOSE],
+            next: doMatchesAsChildren
         })
     ]);
 }

@@ -89,11 +89,15 @@
                     edElem.tokenName = prop;
                     var prev = $(edElem.uiElements[0]);
                     var par = edElem.uiElements[0].parentElement;
+                    var pchlds = $(par).children();
+                    var firstInLine = pchlds.length == 1 &&
+                        pchlds.index(prev) == 0;
                     var anchr = $("<span>Hi Anchor</span>");
                     anchr.insertBefore(prev);
                     prev = anchr;
                     if (edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
-                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE) {
+                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE ||
+                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_VARIABLE) {
                         edElem.modelElem = mdlElem;
                         // add assignment if required
                         var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
@@ -102,7 +106,7 @@
                             var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
                             var uis = [ass].concat(createUIElems(assMdl.displayInf));
                             var assElem = new editElement(uis, langModel.getELEM_TYPE().ADD, assMdl);
-                            edElem.insertBeforeMe(assElem);
+                            edElem.insertSiblingBeforeMe(assElem);
                             prev = insertUIElements(uis, prev);
                         }
 
@@ -114,23 +118,29 @@
                         if (mdlElem.displayPref != null)
                             prev = createInsertUIElements(mdlElem.displayPref, prev, edElem);
 
-                        var chlds = edElem.modelElem.next.getChildren();
+                        var chlds = edElem.modelElem.next.getChildren(edElem);
                         if (chlds != null && chlds.length > 0) {
                             var chld = chlds[0];
                             var requ = chld.jc__required;
                             var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
                                 langModel.getDISPLAY_TYPE().L_ADD_OPT;
                             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
-                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, chlds[0]);
+                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, chld);
                             edElem.addChild(eElem);
                             prev = insertUIElements([add], prev);
                         }
 
                         if (mdlElem.displayPostf != null)
                             prev = createInsertUIElements(mdlElem.displayPostf, prev, edElem);
-                        var nxt = edElem.modelElem.next.getNext();
+                        var nxt = edElem.modelElem.next.getNext(edElem);
                         if (nxt != null) {
-
+                            var requ = nxt.jc__required;
+                            var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
+                                langModel.getDISPLAY_TYPE().L_ADD_OPT;
+                            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
+                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, nxt);
+                            edElem.addConcat(eElem);
+                            prev = insertUIElements([add], prev);
                         }
                     } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
                         var add = $(edElem.uiElements[0]);
@@ -138,6 +148,8 @@
                         add.addClass(mdlElem.tokenClazz);
                         add.text(edElem.tokenName);
                     }
+                    if (firstInLine)
+                        addNewLine(statementContainer);
                     editNext(anchr, anchr);
                 }
             } else if (type == 2) { // SKIP
@@ -227,7 +239,8 @@
         var fillBody = function (pBody, edElem) {
             var mdlElem = edElem.modelElem;
             if (mdlElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
-                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE) {
+                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE ||
+                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_VARIABLE) {
                 var sel;
                 var mdlElems = [];
                 var props = [];
@@ -279,16 +292,31 @@
 
         var initStatements = function (stmtContainer) {
             if (content == null) { // empty
-                var sl = ui_fact.createUIElem("StatementLine");
-                var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
-                sl.appendChild(add);
-                startEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, langModel.firstLine); // first line
-                var elem = new editElement([add], langModel.getELEM_TYPE().ADD, langModel.firstLine.getChildren()[0]);
-                startEditElem.addChild(elem);
-                ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
+                addNewLine(stmtContainer);
             } else { // has content
 
             }
+        }
+
+        var addNewLine = function (stmtContainer) {
+            var sl = ui_fact.createUIElem("StatementLine");
+            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
+            sl.appendChild(add);
+            var mdl;
+            var lines = $(stmtContainer).find(".ed-statement-line");
+            var prev = null;
+            if (lines.length == 0) // first line
+                mdl = langModel.firstLine;
+            else {
+                mdl = langModel.followLine;
+                prev = lines.last()[0].jc_editElem;
+            }
+            startEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, mdl);
+            if (prev != null)
+                prev.appendSibling(startEditElem);
+            var elem = new editElement([add], langModel.getELEM_TYPE().ADD, mdl.getChildren(startEditElem)[0]);
+            startEditElem.addChild(elem);
+            ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
         }
     }
 
@@ -331,40 +359,76 @@
 
     /***********************************************/
     var editElement = function (uiElems, el_type, mdlElem) {
-        var nextConcat = null;
-        var prevConcat = null;
-        var prevSibling = null;
-        var nextSibling = null;
-        var children = null;
-        var parent = null;
-
-        //public
         var self = this;
         if (uiElems != null)
             $.each(uiElems, function (idx, val) {
                 val.jc_editElem = self
             });
+
+        this.children = null;
+        this.prevSibling = null;
+        this.nextSibling = null;
+        this.nextConcat = null;
+        this.prevConcat = null;
+        this.parent = null;
         this.uiElements = uiElems;
         this.elemType = el_type;
         // only initialized on line
         this.modelElem = mdlElem;
         this.tokenName = null;
 
+        var getMyLine = function () {
+            if (self.elemType == "LINE")
+                return self;
+            var par = self.findParent();
+            while (par != null && par.elemType != "LINE")
+                par = par.findParent();
+            return par;
+        }
+
+        this.findParent = function () {
+            if (this.parent != null)
+                return this.parent;
+            if (this.prevConcat != null) {
+                var pc = this.prevConcat;
+                while (pc.prevConcat != null)
+                    pc = pc.prevConcat;
+                return pc.parent;
+            }
+            return null;
+        }
+
         this.addChild = function (elem) {
-            if (children == null)
-                children = [];
-            children.push(elem);
+            if (this.children == null)
+                this.children = [];
+            this.children.push(elem);
             elem.parent = this;
+        }
+        
+        this.addConcat = function (elem) {
+            this.nextConcat = elem;
+            elem.prevConcat = this;
         }
 
         this.insertChildBefore = function (newChild, before) {
-            if (children == null)
-                children = [];
-            var idx = children.indexOf(before);
+            if (this.children == null)
+                this.children = [];
+            var idx = this.children.indexOf(before);
             if (idx >= 0)
-                children.splice(idx, 0, newChild);
+                this.children.splice(idx, 0, newChild);
             else
-                children.push(newChild);
+                this.children.push(newChild);
+            newChild.parent = this;
+        }
+
+        this.insertChildAfter = function (newChild, after) {
+            if (this.children == null)
+                this.children = [];
+            var idx = this.children.indexOf(after);
+            if (idx >= 0 && this.children.length > idx)
+                this.children.splice(idx + 1, 0, newChild);
+            else
+                this.children.push(newChild);
             newChild.parent = this;
         }
 
@@ -373,7 +437,7 @@
                 this.parent != null && this.parent.elemType == "LINE";
         }
 
-        this.insertBeforeMe = function (edElem) {
+        this.insertSiblingBeforeMe = function (edElem) {
             if (this.prevSibling != null) {
                 this.prevSibling.nextSibling = edElem;
                 edElem.prevSibling = this.prevSibling;
@@ -382,6 +446,41 @@
             this.prevSibling = edElem;
             if (this.parent != null)
                 this.parent.insertChildBefore(edElem, this);
+        }
+
+        this.appendSibling = function (sibl) {
+            this.nextSibling = sibl;
+            sibl.prevSibling = this;
+            if (this.parent != null)
+                this.parent.insertChildAfter(sibl, this);
+        }
+
+        this.collectAssignments = function () {
+            var line = getMyLine();
+            var ass = [];
+            line = line.prevSibling;
+            while (line != null) {
+                var chld = line.children[0];
+                if (chld.elemType == "ASSIGNMENT") {
+                    ass.push(chld);
+                }
+                line = line.prevSibling;
+            }
+            return ass;
+        }
+        
+        this.getLastConcat = function() {
+            var conc = this;
+            while(conc.nextConcat != null)
+                conc = conc.nextConcat;
+            return conc;
+        }
+        
+        this.getReturnValue = function() {
+            var retMthd = this.modelElem.returnMethod;
+            if (retMthd == null)
+                return this;
+            return retMthd(this);
         }
     }
 

@@ -65,7 +65,7 @@
                 var self = e.data.self;
                 switch (e.which) {
                 case 39: // right
-                        self.finished(2, self); // skip
+                    self.finished(2, self); // skip
                     break;
 
                 default:
@@ -180,7 +180,8 @@
                 self: this
             }, function (e) {
                 var self = e.data.self;
-                switch (e.which) {
+                var c = e.which;
+                switch (c) {
                 case 37: // left
                     break;
 
@@ -209,6 +210,11 @@
                     break;
 
                 default:
+                    if (self.state.selectedValue != -1 && !(c == 8 || c == 46)) {
+                        // avoid overtyping a valid selection
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
                     return; // exit this handler for other keys
                 }
                 e.preventDefault(); // prevent the default action (scroll / move caret)
@@ -238,7 +244,7 @@
                 e.stopPropagation();
                 self.finished(0, self); // OK
             });
-            
+
             skip.on("click", {
                 self: this
             }, function (e) {
@@ -345,7 +351,6 @@
             if (c !== 0 && c !== 13 && c !== 37 && c !== 38 && c !== 39 && c !== 40 && c !== 27 &&
                 !e.ctrlKey && !e.metaKey && !e.altKey
             ) {
-
                 var sval = $(e.currentTarget).val();
 
                 if (sval.length === 0) {
