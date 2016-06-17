@@ -1,0 +1,29 @@
+.jcradio {
+    position: relative;
+    background-color: #dff0d8;
+}
+
+.jcradio .sel-ok {
+    position: absolute;
+    top: 6px;
+    right: 3.5em;
+    color: green;
+    cursor: pointer;
+}
+.jcradio .sel-cancel {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+    right: .5em;
+    color: red;
+}
+.jcradio .sel-skip {
+    cursor: pointer;
+    position: absolute;
+    top: 6px;
+	right: 2em;
+    color: green;
+}
+.jcradio-select .radio {
+    left: 2em;
+}

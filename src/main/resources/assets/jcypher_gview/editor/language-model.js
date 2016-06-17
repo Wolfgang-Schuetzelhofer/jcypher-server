@@ -56,7 +56,7 @@ var jc_DomainQueryModel = function (domModel) {
             };
             ret[edElem.tokenName] = obj;
         });
-        return [ret];
+        return ret;
     }
 
     var getModelFields = function (editElem) {
@@ -96,7 +96,8 @@ var jc_DomainQueryModel = function (domModel) {
         REF_MODEL_TYPE: "REF_MODEL_TYPE",
         REF_VARIABLE: "REF_VARIABLE",
         LINE: "LINE",
-        ASSIGNMENT: "ASSIGNMENT"
+        ASSIGNMENT: "ASSIGNMENT",
+        LITERAL: "LITERAL"
     }
 
     this.getDISPLAY_TYPE = function () {
@@ -151,8 +152,13 @@ var jc_DomainQueryModel = function (domModel) {
     modelTypesAsChildren.getChildren = getDomainTypes;
 
     /***************************************************/
-    var doMatchesAsChildren = new Structure();
-    doMatchesAsChildren.getChildren = getDOMatches;
+    var booleanOpsOnDoMatches = new Structure();
+    booleanOpsOnDoMatches.getChildren = function (editElem) {
+        return [getDOMatches(editElem)];
+    };
+    booleanOpsOnDoMatches.getNext = function (editElem) {
+        return booleanOps;
+    }
 
     /***************************************************/
     var modelFields = new Structure();
@@ -162,6 +168,12 @@ var jc_DomainQueryModel = function (domModel) {
     this.createAssignment = function () {
         var descr = new Descriptor(ELEM_TYPE.ASSIGNMENT);
         descr.displayInf = [new displayUnit(" = ")];
+        descr.tokenClazz = DISPLAY_TYPE.L_TOKEN;
+        descr.next = null;
+        return descr;
+    }
+    this.createLiteral = function () {
+        var descr = new Descriptor(ELEM_TYPE.LITERAL);
         descr.tokenClazz = DISPLAY_TYPE.L_TOKEN;
         descr.next = null;
         return descr;
@@ -203,7 +215,42 @@ var jc_DomainQueryModel = function (domModel) {
             proposal: "WHERE", // optional
             displayPref: [new displayUnit("WHERE"), display_BR_OPEN],
             displayPostf: [display_BR_CLOSE],
-            next: doMatchesAsChildren
+            next: booleanOpsOnDoMatches
         })
     ]);
+
+    /***************************************************/
+    var literalOrDom = new Descriptor().
+
+    jc__addElement("jc__preselect", {
+        selectLiteral: {
+            proposal: "Insert a Literal", // optional
+            descriptor: this.createLiteral // a function to be called with editElement
+        },
+        selectDOM: {
+            proposal: "Select from Matches", // optional
+            descriptor: getDOMatches // a function to be called with editElement
+        }
+    });
+    
+    /***************************************************/
+    var literalOrDomAsChildren = new Structure();
+    literalOrDomAsChildren.getChildren = function(editElem) {
+        return [literalOrDom];
+    }
+
+    /***************************************************/
+    var booleanOps = new Descriptor(
+        ELEM_TYPE.LANG_ELEM).
+
+    jc__addElement("EQUALS", {
+        displayPref: [new displayUnit("EQUALS"), display_BR_OPEN],
+        displayPostf: [display_BR_CLOSE],
+        next: literalOrDomAsChildren
+    }).
+    jc__addElement("GT", {
+        displayPref: [new displayUnit("GT"), display_BR_OPEN],
+        displayPostf: [display_BR_CLOSE],
+        next: literalOrDomAsChildren
+    });
 }

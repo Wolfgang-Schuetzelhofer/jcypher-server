@@ -4,8 +4,10 @@
 <head>
     <script src="jctinyselect.js"></script>
     <script src="jcinput.js"></script>
+    <script src="jcradio.js"></script>
     <link rel="stylesheet" href="jctinyselect.css">
     <link rel="stylesheet" href="jcinput.css">
+    <link rel="stylesheet" href="jcradio.css">
 </head>
 
 <body>
@@ -48,6 +50,13 @@
     <template id="ProposalFill">
         <div class="jcinput">
             <input type="text" class="form-control jc-ctrl">
+        </div>
+    </template>
+    
+    <template id="ProposalRadio">
+        <div class="jcradio panel panel-default">
+            <div class="jcradio-head"></div>
+            <div class="jcradio-select btn-group" data-toggle="buttons"></div>
         </div>
     </template>
 

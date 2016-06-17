@@ -242,35 +242,58 @@
                 mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE ||
                 mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_VARIABLE) {
                 var sel;
+                var selectr;
                 var mdlElems = [];
-                var props = [];
-
-                sel = ui_fact.createUIElem("ProposalSelect");
-                var selectr = $(sel);
-                var idx = 0;
-                if (mdlElem != null) {
-                    $.each(mdlElem, function (prop, val) {
+                if (mdlElem.jc__preselect != null) {
+                    sel = ui_fact.createUIElem("ProposalRadio");
+                    $(sel).css("width", "25em");
+                    pBody.appendChild(sel);
+                    selectr = $(sel).children(".jcradio-select");
+                    var idx = 0;
+                    $.each(mdlElem.jc__preselect, function (prop, val) {
                         if (prop.indexOf("jc__") != 0) {
                             var propsl = val.proposal != null ? val.proposal : prop;
-                            selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
-                            props.push(prop);
+                            selectr.append("<label class='radio'><input type='radio' name='group1' value='" + prop + "'>" + propsl + "</label>");
                             mdlElems.push(val);
                             idx++;
                         }
                     });
-                }
+                    var opts = {
+                        onClose: proposalClosed,
+                        modelElements: mdlElems,
+                        editElement: edElem
+                    };
+                    new jcradio(sel, opts).init();
+                } else {
+                    var props = [];
 
-                var sl = ui_fact.createUIElem("StatementLine");
-                $(sl).css("width", "25em");
-                sl.appendChild(sel);
-                pBody.appendChild(sl);
-                var opts = {
-                    onClose: proposalClosed,
-                    modelElements: mdlElems,
-                    properties: props,
-                    editElement: edElem
-                };
-                $(sl).jctinyselect(opts);
+                    sel = ui_fact.createUIElem("ProposalSelect");
+                    selectr = $(sel);
+                    var idx = 0;
+                    if (mdlElem != null) {
+                        $.each(mdlElem, function (prop, val) {
+                            if (prop.indexOf("jc__") != 0) {
+                                var propsl = val.proposal != null ? val.proposal : prop;
+                                selectr.append("<option value='" + idx + "'>" + propsl + "</option>");
+                                props.push(prop);
+                                mdlElems.push(val);
+                                idx++;
+                            }
+                        });
+                    }
+
+                    var sl = ui_fact.createUIElem("StatementLine");
+                    $(sl).css("width", "25em");
+                    sl.appendChild(sel);
+                    pBody.appendChild(sl);
+                    var opts = {
+                        onClose: proposalClosed,
+                        modelElements: mdlElems,
+                        properties: props,
+                        editElement: edElem
+                    };
+                    $(sl).jctinyselect(opts);
+                }
             } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
                 var fill = ui_fact.createUIElem("ProposalFill");
                 $(fill).css("width", "25em");
@@ -404,7 +427,7 @@
             this.children.push(elem);
             elem.parent = this;
         }
-        
+
         this.addConcat = function (elem) {
             this.nextConcat = elem;
             elem.prevConcat = this;
@@ -468,15 +491,15 @@
             }
             return ass;
         }
-        
-        this.getLastConcat = function() {
+
+        this.getLastConcat = function () {
             var conc = this;
-            while(conc.nextConcat != null)
+            while (conc.nextConcat != null)
                 conc = conc.nextConcat;
             return conc;
         }
-        
-        this.getReturnValue = function() {
+
+        this.getReturnValue = function () {
             var retMthd = this.modelElem.returnMethod;
             if (retMthd == null)
                 return this;
