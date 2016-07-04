@@ -33,6 +33,18 @@
         var domainGraph = null;
         var domainName = null;
         var dbName = null;
+        var clickListener = null;
+        var keydownListener = null;
+        
+        $(document).on("click", function(e){
+            if (clickListener != null)
+                clickListener.actOnClick(e);
+        }).
+        on("keydown", function (e) {
+            if (keydownListener != null)
+                keydownListener.actOnKeydown(e);
+        });
+        
         var domainModelActions = {
             org: {},
             nodeDblClicked: function (nd) {
@@ -45,6 +57,14 @@
         };
 
         // public methods
+        this.setClickListener = function(lstnr) {
+            clickListener = lstnr;
+        }
+        
+        this.setKeydownListener = function(lstnr) {
+            keydownListener = lstnr;
+        }
+        
         this.getDBName = function () {
             return dbName;
         }

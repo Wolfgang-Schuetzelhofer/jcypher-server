@@ -36,9 +36,17 @@
         var langModel = lmdl;
         var content = cont;
         var ui_fact = fact;
-        var startEditElem = null;
+        var firstLineElem = null;
+        var proposalOpen = false;
+        var clickListener = null;
 
         var statementContainer = null;
+        var marked = null;
+        var prevMarked = null;
+        var markAddsOnly = true;
+
+        JC_MAIN.setClickListener(this);
+        JC_MAIN.setKeydownListener(this);
 
         //public
         this.getStatementContainer = function () {
@@ -60,6 +68,51 @@
 
         this.editorClosed = function () {
             hideProposal();
+            JC_MAIN.setClickListener(null);
+            JC_MAIN.setKeydownListener(null);
+        }
+
+        this.actOnClick = function (e) {
+            if (clickListener != null)
+                clickListener.actOnClick(e);
+            return;
+        }
+
+        this.actOnKeydown = function (e) {
+            if (!proposalOpen) {
+                var c = e.which;
+                switch (c) {
+                case 37: // left
+                    markNext(false);
+                    break;
+
+                case 38: // up
+                    markFirstInNextLine(false);
+                    break;
+
+                case 39: // right
+                    markNext(true);
+                    break;
+
+                case 40: // down
+                    markFirstInNextLine(true);
+                    break;
+
+                case 27: // esc
+                    break;
+
+                case 13: // enter
+                    if (marked != null) {
+                        showProposal(marked.uiElements[0]);
+                    }
+                    break;
+
+                default:
+                    return; // exit this handler for other keys
+                }
+                e.preventDefault(); // prevent the default action (scroll / move caret)
+            }
+            return;
         }
 
         this.editorMoved = function (typ, dx, dy) {
@@ -84,6 +137,7 @@
         var proposalClosed = function (type, mdlElem, prop, edElem) {
             hideProposal();
             if (type == 0) { // OK
+                hideMark();
                 if (edElem.elemType == langModel.getELEM_TYPE().ADD) { // new content added
                     edElem.elemType = edElem.modelElem.jc__elemType;
                     edElem.tokenName = prop;
@@ -142,7 +196,8 @@
                             edElem.addConcat(eElem);
                             prev = insertUIElements([add], prev);
                         }
-                    } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
+                    } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT ||
+                        mdlElem.jc__elemType == langModel.getELEM_TYPE().LITERAL) {
                         var add = $(edElem.uiElements[0]);
                         add.removeClass();
                         add.addClass(mdlElem.tokenClazz);
@@ -150,17 +205,29 @@
                     }
                     if (firstInLine)
                         addNewLine(statementContainer);
-                    editNext(anchr, anchr);
+                    if (!editNext(anchr, anchr))
+                        markNext(true);
                 }
             } else if (type == 2) { // SKIP
+                if (edElem.prevModelElem != null) {
+                    edElem.modelElem = edElem.prevModelElem;
+                    edElem.prevModelElem = null;
+                }
+                hideMark();
                 editNext($(edElem.uiElements[0]), null);
+            } else if (type == 1) { // CANCEL
+                if (edElem.prevModelElem != null) {
+                    edElem.modelElem = edElem.prevModelElem;
+                    edElem.prevModelElem = null;
+                }
             }
             return;
         }
 
         var editNext = function (strt, toRemove) {
+            var ret = false;
             var nextAdd = strt.nextAll("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
-            if (nextAdd.length == 0) {
+            if (nextAdd.length == 0) { // try again from line start
                 nextAdd = $(strt[0].parentElement)
                     .children("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
             }
@@ -168,7 +235,9 @@
                 toRemove.remove();
             if (nextAdd.length > 0) {
                 showProposal(nextAdd[0]);
+                ret = true;
             }
+            return ret;
         }
 
         var createInsertUIElements = function (elems, prev, edElem) {
@@ -202,6 +271,9 @@
 
         var showProposal = function (atElem) {
             var edElem = atElem.jc_editElem;
+            hideMark();
+            marked = edElem;
+            showMark();
             var bodyRect = document.body.getBoundingClientRect();
             var rect = atElem.getBoundingClientRect();
             var px = rect.left + (rect.right - rect.left) / 2 - bodyRect.left;
@@ -233,6 +305,7 @@
             $(prop).css("visibility", "visible");
             var sbox = $(prop).find(".searchbox");
             sbox.focus();
+            proposalOpen = true;
         }
 
         // calculate the proposal based on the model
@@ -259,7 +332,7 @@
                         }
                     });
                     var opts = {
-                        onClose: proposalClosed,
+                        onClose: preselected,
                         modelElements: mdlElems,
                         editElement: edElem
                     };
@@ -292,9 +365,12 @@
                         properties: props,
                         editElement: edElem
                     };
-                    $(sl).jctinyselect(opts);
+                    var tsel = [];
+                    $(sl).jctinyselect(opts, tsel);
+                    clickListener = tsel[0];
                 }
-            } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT) {
+            } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT ||
+                mdlElem.jc__elemType == langModel.getELEM_TYPE().LITERAL) {
                 var fill = ui_fact.createUIElem("ProposalFill");
                 $(fill).css("width", "25em");
                 pBody.appendChild(fill);
@@ -306,11 +382,24 @@
             }
         }
 
+        // type: 0..OK, 1..CANCEL, 2..SKIP; value: id of selected
+        var preselected = function (type, mdlElem, prop, edElem) {
+            if (type == 0) {
+                var mdl = mdlElem.descriptor(edElem);
+                edElem.prevModelElem = edElem.modelElem;
+                edElem.modelElem = mdl;
+                showProposal(edElem.uiElements[0]);
+            } else
+                proposalClosed(type, mdlElem, prop, edElem);
+        }
+
         var hideProposal = function () {
             var prop = ui_fact.getProposalDialog();
             if (prop.parentNode != null)
                 prop.parentNode.removeChild(prop);
             $(prop).children(".prop-body").empty();
+            proposalOpen = false;
+            clickListener = null;
         }
 
         var initStatements = function (stmtContainer) {
@@ -319,6 +408,187 @@
             } else { // has content
 
             }
+            markNext(true);
+        }
+
+        var hideMark = function () {
+            if (marked != null) {
+                setUnsetMark(marked, false); // unset
+                prevMarked = marked;
+                marked = null;
+            }
+        }
+
+        var showMark = function () {
+            if (marked != null)
+                setUnsetMark(marked, true); // set
+        }
+
+        var markNext = function (forward) {
+            hideMark();
+            var sel = "." + langModel.getDISPLAY_TYPE().L_ADD;
+            var na = findNextElem(sel, forward);
+            if (na != null)
+                marked = na;
+            else if (prevMarked != null)
+                marked = prevMarked;
+            showMark();
+        }
+
+        var markFirstInNextLine = function (forward) {
+            hideMark();
+            var sel = "." + langModel.getDISPLAY_TYPE().L_ADD;
+            var mrk = marked != null ? marked : prevMarked;
+            var line = null;
+            if (mrk == null) {
+                line = firstLineElem;
+                if (!forward) {
+                    while (line.nextSibling != null)
+                        line = line.nextSibling;
+                }
+            } else {
+                line = mrk.getMyLine();
+                if (forward)
+                    line = line.nextSibling;
+                else
+                    line = line.prevSibling;
+            }
+            var na = null;
+            while (na == null && line != null) {
+                na = findFirstInLine(line, sel);
+                if (na != null && na.length > 0)
+                    na = na[0].jc_editElem;
+                else
+                    na = null;
+                if (forward)
+                    line = line.nextSibling;
+                else
+                    line = line.prevSibling;
+            }
+            if (na != null)
+                marked = na;
+            else if (prevMarked != null)
+                marked = prevMarked;
+            showMark();
+        }
+
+        // singleElem may be null (then mark group)
+        var setUnsetMark = function (edElem, doSet) {
+            var fe = edElem.uiElements[0];
+            var isAdd = $(fe).hasClass(langModel.getDISPLAY_TYPE().L_ADD);
+            fe = isAdd ? fe : null;
+            var sel = ".ed-marked";
+            var isMarked = $(edElem.uiElements[0]).parent(sel).length > 0;
+            if ((doSet && !isMarked) || (!doSet && isMarked)) {
+                if (fe != null) {
+                    markUnmarkGroup([fe], doSet);
+                } else {
+                    var groups = findGroups(edElem);
+                    var i;
+                    for (i = 0; i < groups.length; i++) {
+                        markUnmarkGroup(groups[i], doSet);
+                    }
+                }
+            }
+        }
+
+        var markUnmarkGroup = function (group, doMark) {
+            if (doMark) {
+                var mark = $("<span></span>").addClass("ed-marked");
+                var i;
+                for (i = 0; i < group.length; i++) {
+                    var elem = $(group[i]);
+                    if (i == 0)
+                        mark.insertBefore(elem);
+                    elem.detach().appendTo(mark);
+                }
+            } else {
+                var mark = $(group[0]).parent(".ed-marked");
+                if (mark.length > 0) {
+                    var i;
+                    for (i = group.length - 1; i >= 0; i--) {
+                        var elem = $(group[i]);
+                        elem.detach().insertAfter(mark);
+                        if (i == 0)
+                            mark.detach();
+                    }
+                }
+            }
+        }
+
+        var findGroups = function (edElem) {
+            var groups = [];
+            var group = [];
+            var i;
+            var prev = null;
+            for (i = 0; i < edElem.uiElements.length; i++) {
+                var elem = edElem.uiElements[i];
+                if (i == 0)
+                    group.push(elem);
+                else {
+                    if (prev.nextElementSibling === elem)
+                        group.push(elem);
+                    else {
+                        groups.push(group);
+                        group = [];
+                        group.push(elem);
+                    }
+                }
+                prev = elem;
+            }
+            groups.push(group);
+            return groups;
+        }
+
+        var findNextElem = function (sel, forward) {
+            var mrk = marked != null ? marked : prevMarked;
+            var nextElem;
+            var line = null;
+            if (mrk == null) {
+                line = firstLineElem;
+                if (forward) {
+                    nextElem = findFirstInLine(line, sel);
+                } else {
+                    while (line.nextSibling != null)
+                        line = line.nextSibling;
+                    nextElem = findLastInLine(line, sel);
+                }
+            } else {
+                line = mrk.getMyLine();
+                if (forward)
+                    nextElem = $(mrk.uiElements[0]).nextAll(sel).eq(0);
+                else
+                    nextElem = $(mrk.uiElements[0]).prevAll(sel).eq(0);
+            }
+            if (forward)
+                line = line.nextSibling;
+            else
+                line = line.prevSibling;
+            while (nextElem.length == 0 && line != null) {
+                if (forward) {
+                    nextElem = findFirstInLine(line, sel);
+                    line = line.nextSibling;
+                } else {
+                    nextElem = findLastInLine(line, sel);
+                    line = line.prevSibling;
+                }
+            }
+            if (nextElem.length > 0)
+                return nextElem[0].jc_editElem;
+            return null;
+        }
+
+        var findFirstInLine = function (line, sel) {
+            var el = line.children[0];
+            return $(el.uiElements[0]).nextAll(sel).addBack(sel).eq(0);
+        }
+
+        var findLastInLine = function (line, sel) {
+            var el = line.children[0];
+            var elem = $(el.uiElements[0]).nextAll().last();
+            if (elem.filter(sel).length == 1) // if the last one matches
+                return elem;
+            return elem.prevAll(sel).eq(0);
         }
 
         var addNewLine = function (stmtContainer) {
@@ -334,11 +604,13 @@
                 mdl = langModel.followLine;
                 prev = lines.last()[0].jc_editElem;
             }
-            startEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, mdl);
+            var sEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, mdl);
+            if (lines.length == 0) // first line
+                firstLineElem = sEditElem;
             if (prev != null)
-                prev.appendSibling(startEditElem);
-            var elem = new editElement([add], langModel.getELEM_TYPE().ADD, mdl.getChildren(startEditElem)[0]);
-            startEditElem.addChild(elem);
+                prev.appendSibling(sEditElem);
+            var elem = new editElement([add], langModel.getELEM_TYPE().ADD, mdl.getChildren(sEditElem)[0]);
+            sEditElem.addChild(elem);
             ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
         }
     }
@@ -400,10 +672,10 @@
         this.modelElem = mdlElem;
         this.tokenName = null;
 
-        var getMyLine = function () {
-            if (self.elemType == "LINE")
-                return self;
-            var par = self.findParent();
+        this.getMyLine = function () {
+            if (this.elemType == "LINE")
+                return this;
+            var par = this.findParent();
             while (par != null && par.elemType != "LINE")
                 par = par.findParent();
             return par;
@@ -479,7 +751,7 @@
         }
 
         this.collectAssignments = function () {
-            var line = getMyLine();
+            var line = this.getMyLine();
             var ass = [];
             line = line.prevSibling;
             while (line != null) {

@@ -34,20 +34,21 @@ function jcinput(elem, opts) {
         ok.on("click", function (e) {
             finished(0); // OK
         });
-        
+
         skip.on("click", function (e) {
             finished(2); // SKIP
         });
 
         ctrl.on("keydown", function (e) {
             switch (e.which) {
-            case 37: // left
-                break;
+            //case 37: // left
+              //  break;
 
             case 38: // up
                 break;
 
-            case 39: // right
+            case 9: // tab 39..right
+                e.stopPropagation();
                 finished(2);
                 break;
 
@@ -59,6 +60,7 @@ function jcinput(elem, opts) {
                 break;
 
             case 13: // enter
+                e.stopPropagation();
                 finished(0);
                 break;
 
@@ -78,7 +80,7 @@ function jcinput(elem, opts) {
     }
 
     //private
-    // type: 0..OK, 1..CANCEL
+    // type: 0..OK, 1..CANCEL, 2..SKIP
     var finished = function (type) {
         var val = container.children(".jc-ctrl").val();
         if (type == 1 || type == 2 || (type == 0 && val.length > 0))

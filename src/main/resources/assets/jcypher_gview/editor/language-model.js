@@ -232,10 +232,10 @@ var jc_DomainQueryModel = function (domModel) {
             descriptor: getDOMatches // a function to be called with editElement
         }
     });
-    
+
     /***************************************************/
     var literalOrDomAsChildren = new Structure();
-    literalOrDomAsChildren.getChildren = function(editElem) {
+    literalOrDomAsChildren.getChildren = function (editElem) {
         return [literalOrDom];
     }
 
@@ -244,7 +244,8 @@ var jc_DomainQueryModel = function (domModel) {
         ELEM_TYPE.LANG_ELEM).
 
     jc__addElement("EQUALS", {
-        displayPref: [new displayUnit("EQUALS"), display_BR_OPEN],
+        displayPref: [new displayUnit(".", DISPLAY_TYPE.L_SEPARATOR),
+                      new displayUnit("EQUALS"), display_BR_OPEN],
         displayPostf: [display_BR_CLOSE],
         next: literalOrDomAsChildren
     }).

@@ -51,27 +51,16 @@
             }
         },
 
+        actOnClick: function (e) {
+            this.closeDropdown(this);
+        },
+
         createSelect: function ($el) {
             // Create container for select, search and options
             this.state.container = $("<div></div>").
             addClass("tinyselect").
             css({
                 width: $el.css("width")
-            });
-            this.state.container.
-            on("keydown", {
-                self: this
-            }, function (e) {
-                var self = e.data.self;
-                switch (e.which) {
-                case 39: // right
-                    self.finished(2, self); // skip
-                    break;
-
-                default:
-                    return; // exit this handler for other keys
-                }
-                e.preventDefault(); // prevent the default action (scroll / move caret)
             });
 
             // Add search
@@ -96,7 +85,11 @@
                 self: this
             }, function (e) {
                 var me = $(this);
-                if (e.keyCode == 40) {
+                var self = e.data.self;
+                if (e.keyCode == 9) {
+                    e.stopPropagation();
+                    self.finished(2, self); // skip
+                } else if (e.keyCode == 40) {
                     me.next().focus();
                     return false;
                 } else if (e.keyCode == 38) {
@@ -125,11 +118,6 @@
             // Hide original select element and add new component to below
             $el.hide().after(this.state.container);
             this.state.$el = $el;
-
-            // Hide select content when clicked elsewhere in the document
-            $(document).on("click", {
-                self: this
-            }, this.onDocumentClicked);
         },
 
         createItems: function (selected) {
@@ -206,6 +194,7 @@
                     break;
 
                 case 13: // enter
+                    e.stopPropagation();
                     self.finished(0, self);
                     break;
 
@@ -338,17 +327,11 @@
             }
         },
 
-        onDocumentClicked: function (e) {
-            var self = e.data.self;
-
-            self.closeDropdown(self);
-        },
-
         onSearchKeyPress: function (e) {
             var self = e.data.self;
             var c = e.which;
             //37..left, 38..up, 39..right, 40..down, 13..enter
-            if (c !== 0 && c !== 13 && c !== 37 && c !== 38 && c !== 39 && c !== 40 && c !== 27 &&
+            if (c !== 0 && c !== 13 && c !== 37 && c !== 38 && c !== 39 && c !== 40 && c !== 27 && c !== 9 &&
                 !e.ctrlKey && !e.metaKey && !e.altKey
             ) {
                 var sval = $(e.currentTarget).val();
@@ -378,6 +361,9 @@
                     self.openDropdown(self);
                 else
                     self.closeDropdown(self);
+            } else if (c == 9) {
+                e.stopPropagation();
+                self.finished(2, self); // skip
             }
         },
 
@@ -473,12 +459,14 @@
     /* ******************************************************************* *
      * Plugin main
      * ******************************************************************* */
-    $.fn.jctinyselect = function (options) {
+    $.fn.jctinyselect = function (options, ret) {
         if (typeof (options) != "undefined") {}
 
         return this.each(function () {
             var sel = Object.create(TinySelect);
             sel.init($(this), options);
+            if (ret != null)
+                ret.push(sel);
         });
     };
 

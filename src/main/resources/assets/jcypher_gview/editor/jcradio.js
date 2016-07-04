@@ -49,7 +49,8 @@ function jcradio(elem, opts) {
                 next(1);
                 break;
 
-            case 39: // right
+            case 9: // tab
+                e.stopPropagation();
                 finished(2);
                 break;
 
@@ -62,6 +63,7 @@ function jcradio(elem, opts) {
                 break;
 
             case 13: // enter
+                e.stopPropagation();
                 finished(0);
                 break;
 
@@ -81,8 +83,12 @@ function jcradio(elem, opts) {
     }
 
     //private
-    // type: 0..OK, 1..CANCEL
+    // type: 0..OK, 1..CANCEL, 2..SKIP
     var finished = function (type) {
+        var opts = options;
+        var idx = getSelectedIndex();
+        options.onClose(type, options.modelElements[idx], null,
+            options.editElement);
         return;
     }
 
@@ -101,5 +107,16 @@ function jcradio(elem, opts) {
                 return false;
             }
         })
+    }
+
+    var getSelectedIndex = function () {
+        var idx = -1;
+        $.each(container.find(".jcradio-select .radio input"), function (i, val) {
+            if (val.checked) {
+                idx = i;
+                return false;
+            }
+        });
+        return idx;
     }
 }
