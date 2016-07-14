@@ -21,11 +21,18 @@
     var editorFactory = function (importId) {
         //private
         var ui_fact = new ui_factory(importId);
+        var dslModelBase = null;
 
         //public
         // content may be null
         this.createEditor = function (langModel, content) {
             return new jc_editor(langModel, content, ui_fact);
+        }
+
+        this.getDSLModelBase = function () {
+            if (dslModelBase == null)
+                dslModelBase = new DSLModelBase();
+            return dslModelBase;
         }
     }
 
@@ -33,6 +40,11 @@
     // cont (content) may be null
     var jc_editor = function (lmdl, cont, fact) {
         //private
+        var DISPLAY_TYPE = {
+            L_ADD: "ed-add",
+            L_ADD_OPT: "ed-add ed-add-opt",
+            L_ADD_REQU: "ed-add ed-add-requ"
+        }
         var langModel = lmdl;
         var content = cont;
         var ui_fact = fact;
@@ -138,7 +150,7 @@
             hideProposal();
             if (type == 0) { // OK
                 hideMark();
-                if (edElem.elemType == langModel.getELEM_TYPE().ADD) { // new content added
+                if (edElem.elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ADD) { // new content added
                     edElem.elemType = edElem.modelElem.jc__elemType;
                     edElem.tokenName = prop;
                     var prev = $(edElem.uiElements[0]);
@@ -149,17 +161,17 @@
                     var anchr = $("<span>Hi Anchor</span>");
                     anchr.insertBefore(prev);
                     prev = anchr;
-                    if (edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
-                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE ||
-                        edElem.modelElem.jc__elemType == langModel.getELEM_TYPE().REF_VARIABLE) {
+                    if (edElem.modelElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.LANG_ELEM ||
+                        edElem.modelElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.REF_MODEL_TYPE ||
+                        edElem.modelElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.REF_VARIABLE) {
                         edElem.modelElem = mdlElem;
                         // add assignment if required
                         var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
                         if (addAss && edElem.isFirstInLine()) {
                             var assMdl = langModel.createAssignment();
-                            var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_REQU);
+                            var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + DISPLAY_TYPE.L_ADD_REQU);
                             var uis = [ass].concat(createUIElems(assMdl.displayInf));
-                            var assElem = new editElement(uis, langModel.getELEM_TYPE().ADD, assMdl);
+                            var assElem = new editElement(uis, JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ADD, assMdl);
                             edElem.insertSiblingBeforeMe(assElem);
                             prev = insertUIElements(uis, prev);
                         }
@@ -172,32 +184,34 @@
                         if (mdlElem.displayPref != null)
                             prev = createInsertUIElements(mdlElem.displayPref, prev, edElem);
 
-                        var chlds = edElem.modelElem.next.getChildren(edElem);
+                        var chlds = edElem.modelElem.children instanceof Function ? edElem.modelElem.children(edElem) :
+                            edElem.modelElem.children;
                         if (chlds != null && chlds.length > 0) {
                             var chld = chlds[0];
                             var requ = chld.jc__required;
-                            var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
-                                langModel.getDISPLAY_TYPE().L_ADD_OPT;
+                            var dTyp = requ ? DISPLAY_TYPE.L_ADD_REQU :
+                                DISPLAY_TYPE.L_ADD_OPT;
                             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
-                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, chld);
+                            var eElem = new editElement([add], JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ADD, chld);
                             edElem.addChild(eElem);
                             prev = insertUIElements([add], prev);
                         }
 
                         if (mdlElem.displayPostf != null)
                             prev = createInsertUIElements(mdlElem.displayPostf, prev, edElem);
-                        var nxt = edElem.modelElem.next.getNext(edElem);
+                        var nxt = edElem.modelElem.next instanceof Function ? edElem.modelElem.next(edElem) :
+                            edElem.modelElem.next;
                         if (nxt != null) {
                             var requ = nxt.jc__required;
-                            var dTyp = requ ? langModel.getDISPLAY_TYPE().L_ADD_REQU :
-                                langModel.getDISPLAY_TYPE().L_ADD_OPT;
+                            var dTyp = requ ? DISPLAY_TYPE.L_ADD_REQU :
+                                DISPLAY_TYPE.L_ADD_OPT;
                             var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + dTyp);
-                            var eElem = new editElement([add], langModel.getELEM_TYPE().ADD, nxt);
+                            var eElem = new editElement([add], JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ADD, nxt);
                             edElem.addConcat(eElem);
                             prev = insertUIElements([add], prev);
                         }
-                    } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT ||
-                        mdlElem.jc__elemType == langModel.getELEM_TYPE().LITERAL) {
+                    } else if (mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ASSIGNMENT ||
+                        mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.LITERAL) {
                         var add = $(edElem.uiElements[0]);
                         add.removeClass();
                         add.addClass(mdlElem.tokenClazz);
@@ -226,10 +240,10 @@
 
         var editNext = function (strt, toRemove) {
             var ret = false;
-            var nextAdd = strt.nextAll("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
+            var nextAdd = strt.nextAll("." + DISPLAY_TYPE.L_ADD).eq(0);
             if (nextAdd.length == 0) { // try again from line start
                 nextAdd = $(strt[0].parentElement)
-                    .children("." + langModel.getDISPLAY_TYPE().L_ADD).eq(0);
+                    .children("." + DISPLAY_TYPE.L_ADD).eq(0);
             }
             if (toRemove != null)
                 toRemove.remove();
@@ -311,9 +325,9 @@
         // calculate the proposal based on the model
         var fillBody = function (pBody, edElem) {
             var mdlElem = edElem.modelElem;
-            if (mdlElem.jc__elemType == langModel.getELEM_TYPE().LANG_ELEM ||
-                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_MODEL_TYPE ||
-                mdlElem.jc__elemType == langModel.getELEM_TYPE().REF_VARIABLE) {
+            if (mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.LANG_ELEM ||
+                mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.REF_MODEL_TYPE ||
+                mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.REF_VARIABLE) {
                 var sel;
                 var selectr;
                 var mdlElems = [];
@@ -369,8 +383,8 @@
                     $(sl).jctinyselect(opts, tsel);
                     clickListener = tsel[0];
                 }
-            } else if (mdlElem.jc__elemType == langModel.getELEM_TYPE().ASSIGNMENT ||
-                mdlElem.jc__elemType == langModel.getELEM_TYPE().LITERAL) {
+            } else if (mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ASSIGNMENT ||
+                mdlElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.LITERAL) {
                 var fill = ui_fact.createUIElem("ProposalFill");
                 $(fill).css("width", "25em");
                 pBody.appendChild(fill);
@@ -426,7 +440,7 @@
 
         var markNext = function (forward) {
             hideMark();
-            var sel = "." + langModel.getDISPLAY_TYPE().L_ADD;
+            var sel = "." + DISPLAY_TYPE.L_ADD;
             var na = findNextElem(sel, forward);
             if (na != null)
                 marked = na;
@@ -437,7 +451,7 @@
 
         var markFirstInNextLine = function (forward) {
             hideMark();
-            var sel = "." + langModel.getDISPLAY_TYPE().L_ADD;
+            var sel = "." + DISPLAY_TYPE.L_ADD;
             var mrk = marked != null ? marked : prevMarked;
             var line = null;
             if (mrk == null) {
@@ -475,7 +489,7 @@
         // singleElem may be null (then mark group)
         var setUnsetMark = function (edElem, doSet) {
             var fe = edElem.uiElements[0];
-            var isAdd = $(fe).hasClass(langModel.getDISPLAY_TYPE().L_ADD);
+            var isAdd = $(fe).hasClass(DISPLAY_TYPE.L_ADD);
             fe = isAdd ? fe : null;
             var sel = ".ed-marked";
             var isMarked = $(edElem.uiElements[0]).parent(sel).length > 0;
@@ -593,23 +607,25 @@
 
         var addNewLine = function (stmtContainer) {
             var sl = ui_fact.createUIElem("StatementLine");
-            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + langModel.getDISPLAY_TYPE().L_ADD_OPT);
+            var add = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + DISPLAY_TYPE.L_ADD_OPT);
             sl.appendChild(add);
             var mdl;
             var lines = $(stmtContainer).find(".ed-statement-line");
             var prev = null;
             if (lines.length == 0) // first line
-                mdl = langModel.firstLine;
+                mdl = langModel.getFirstLine();
             else {
-                mdl = langModel.followLine;
+                mdl = langModel.getFollowLine();
                 prev = lines.last()[0].jc_editElem;
             }
-            var sEditElem = new editElement([sl], langModel.getELEM_TYPE().LINE, mdl);
+            var sEditElem = new editElement([sl], JC_EditorFactory.getDSLModelBase().ELEM_TYPE.LINE, mdl);
             if (lines.length == 0) // first line
                 firstLineElem = sEditElem;
             if (prev != null)
                 prev.appendSibling(sEditElem);
-            var elem = new editElement([add], langModel.getELEM_TYPE().ADD, mdl.getChildren(sEditElem)[0]);
+            var chld = mdl.children instanceof Function ? mdl.children(sEditElem) : mdl.children;
+            chld = chld != null ? chld[0] : null;
+            var elem = new editElement([add], JC_EditorFactory.getDSLModelBase().ELEM_TYPE.ADD, chld);
             sEditElem.addChild(elem);
             ui_fact.getTemplateUtil().tmplAppendChildren(stmtContainer, [sl], "ed-statements");
         }
@@ -772,10 +788,8 @@
         }
 
         this.getReturnValue = function () {
-            var retMthd = this.modelElem.returnMethod;
-            if (retMthd == null)
-                return this;
-            return retMthd(this);
+            var retMthd = this.modelElem.returns;
+            return retMthd instanceof Function ? retMthd(sEditElem) : retMthd;
         }
     }
 

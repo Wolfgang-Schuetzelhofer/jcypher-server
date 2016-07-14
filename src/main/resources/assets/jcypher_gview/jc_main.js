@@ -130,7 +130,7 @@
                     if (domainModel == null) {
                         JC_REST.loadModel(dbName, domainName, function (data) {
                             domainModel = data;
-                            domainQueryModel = new jc_DomainQueryModel(domainModel);
+                            domainQueryModel = new JC_DomainQueryModel(domainModel);
                             JC_DomainTypeTree.createModelTree(container, domainModel);
                         });
                     } else {

@@ -88,6 +88,9 @@ function testAll() {
 }
 
 function testQuery() {
+    var qmdl = JC_MAIN.getDomainQueryModel();
+    var fl = qmdl.getFirstLine();
+    
     var pos = {x: 300, y: 150};
     var dlg = JC_QueryDialog.getCreate("TestQuery", null, pos, {
         x: 0,
