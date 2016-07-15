@@ -57,14 +57,52 @@ var DSLModelBase = function () {
 
     /***************************************************/
     var helper = function (self_) {
-        var self = self_;
-        this.createModelElem = function (properties, propsl) {
-            var p = typeof propsl !== 'undefined' ? propsl : null;
-            var mdl = new self_.ModelElement(p);
-            $.extend(mdl, properties);
-            return mdl;
-        };
-    }
-    /***************************************************/
+            var self = self_;
+            this.createModelElem = function (properties, propsl) {
+                var p = typeof propsl !== 'undefined' ? propsl : null;
+                var mdl = new self.ModelElement(p);
+                $.extend(mdl, properties);
+                return mdl;
+            };
+            this.createPreselect = function (choices) {
+                var pres = new self.Descriptor(self.ELEM_TYPE.LANG_ELEM).
+                jc__addElement("jc__preselect", choices);
+                return pres;
+            };
+            this.createChoice = function (proposal, model) {
+                return {
+                    proposal: proposal,
+                    descriptor: model
+                };
+            };
+            // display ... define how to display an assignment
+            // tokenClass ... class attribute to display the variable
+            this.createAssignment = function (display, tokenClass) {
+                var descr = new self.Descriptor(self.ELEM_TYPE.ASSIGNMENT);
+                $.extend(descr, display);
+                descr.tokenClazz = tokenClass;
+                return descr;
+            };
+            this.selectAssigned = function (next) {
+                var nxt = next;
+                var selAss = function (editElem) {
+                    var ass = editElem.collectAssignments();
+                    var ret = new self.Descriptor(self.ELEM_TYPE.REF_VARIABLE);
+                    $.each(ass, function (idx, assElem) {
+                        var prop = {
+                            proposal: assElem.tokenName,
+                            displayPref: [new self.DisplayUnit(assElem.tokenName, assElem.modelElem.tokenClazz)],
+                            sourceElement: assElem,
+                            next: nxt
+                        };
+                        var mdl = self.Helper.createModelElem(prop);
+                        ret[assElem.tokenName] = mdl;
+                    });
+                    return ret;
+                };
+                return selAss;
+            }
+        }
+        /***************************************************/
     this.Helper = new helper(this);
 }

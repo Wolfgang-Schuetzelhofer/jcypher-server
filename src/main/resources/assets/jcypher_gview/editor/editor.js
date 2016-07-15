@@ -166,8 +166,7 @@
                         edElem.modelElem.jc__elemType == JC_EditorFactory.getDSLModelBase().ELEM_TYPE.REF_VARIABLE) {
                         edElem.modelElem = mdlElem;
                         // add assignment if required
-                        var addAss = mdlElem.assignIfFirst == null ? false : mdlElem.assignIfFirst;
-                        if (addAss && edElem.isFirstInLine()) {
+                        if (mdlElem.assignIfFirst && edElem.isFirstInLine()) {
                             var assMdl = langModel.createAssignment();
                             var ass = ui_fact.createUIElem("Token", null, null, "glyphicon glyphicon-plus " + DISPLAY_TYPE.L_ADD_REQU);
                             var uis = [ass].concat(createUIElems(assMdl.displayInf));
@@ -184,10 +183,10 @@
                         if (mdlElem.displayPref != null)
                             prev = createInsertUIElements(mdlElem.displayPref, prev, edElem);
 
-                        var chlds = edElem.modelElem.children instanceof Function ? edElem.modelElem.children(edElem) :
-                            edElem.modelElem.children;
-                        if (chlds != null && chlds.length > 0) {
-                            var chld = chlds[0];
+                        var chlds = edElem.modelElem.children;
+                        var chld = ($.isArray(chlds) && chlds.length > 0) ? chlds[0] : null;
+                        var chld = chld instanceof Function ? chld(edElem) : chld;
+                        if (chld != null) {
                             var requ = chld.jc__required;
                             var dTyp = requ ? DISPLAY_TYPE.L_ADD_REQU :
                                 DISPLAY_TYPE.L_ADD_OPT;
@@ -336,14 +335,9 @@
                     $(sel).css("width", "25em");
                     pBody.appendChild(sel);
                     selectr = $(sel).children(".jcradio-select");
-                    var idx = 0;
-                    $.each(mdlElem.jc__preselect, function (prop, val) {
-                        if (prop.indexOf("jc__") != 0) {
-                            var propsl = val.proposal != null ? val.proposal : prop;
-                            selectr.append("<label class='radio'><input type='radio' name='group1' value='" + prop + "'>" + propsl + "</label>");
-                            mdlElems.push(val);
-                            idx++;
-                        }
+                    $.each(mdlElem.jc__preselect, function (idx, val) {
+                        selectr.append("<label class='radio'><input type='radio' name='group1' value='" + idx + "'>" + val.proposal + "</label>");
+                        mdlElems.push(val);
                     });
                     var opts = {
                         onClose: preselected,
@@ -789,7 +783,7 @@
 
         this.getReturnValue = function () {
             var retMthd = this.modelElem.returns;
-            return retMthd instanceof Function ? retMthd(sEditElem) : retMthd;
+            return retMthd instanceof Function ? retMthd(this) : retMthd;
         }
     }
 

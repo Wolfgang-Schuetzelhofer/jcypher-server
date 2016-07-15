@@ -44,7 +44,7 @@ var JC_DomainQueryModel = function (domModel) {
     var returnFirstChildResult = function (editElem) {
         return editElem.children[0].getReturnValue();
     };
-    
+
     var returnDomainType = function (editElem) {
         return editElem.modelElem.sourceElement;
     };
@@ -67,11 +67,29 @@ var JC_DomainQueryModel = function (domModel) {
         return ret;
     };
     
-    // returns a list with one Descriptor
-    var getDomainTypesAsChild = function (editElem) {
-        return [getDomainTypes(editElem)];
+    var modelFields = function (editElem) {
+        if (editElem.elemType == dslBase.ELEM_TYPE.REF_VARIABLE) {
+            var ass = editElem.modelElem.sourceElement;
+            var assigned = ass.nextSibling.getLastConcat();
+            var typ = assigned.getReturnValue();
+            var ret = new dslBase.Descriptor(dslBase.ELEM_TYPE.REF_MODEL_TYPE);
+            $.each(typ.fields, function (idx, fld) {
+                var prop = {
+                    proposal: fld.name,
+                    displayPref: [new dslBase.DisplayUnit(".", DISPLAY_TYPE.L_SEPARATOR),
+                                  new dslBase.DisplayUnit(fld.name)],
+                    sourceElement: fld,
+                };
+                var mdl = helper.createModelElem(prop);
+                ret[fld.name] = mdl;
+            });
+        }
+        return ret;
     };
+    
+    var matches_navigateFields = helper.selectAssigned(modelFields);
 
+    /***************************************************/
     var createModelElem = function (tokenName, children, next, returns) {
         var chlds = typeof children !== 'undefined' ? children : null;
         var nxt = typeof next !== 'undefined' ? next : null;
@@ -86,15 +104,20 @@ var JC_DomainQueryModel = function (domModel) {
         var mdl = helper.createModelElem(props, tokenName);
         return mdl;
     };
-    var createModelElemAss = function (tokenName, children, next) {
-        var mdl = createModelElem(tokenName, children, next);
+    var createModelElemAss = function (tokenName, children, next, returns) {
+        var mdl = createModelElem(tokenName, children, next, returns);
         mdl.assignIfFirst = true;
         return mdl;
     };
+    var createModelElemDotSep = function (tokenName, children, next, returns) {
+        var mdl = createModelElem(tokenName, children, next, returns);
+        mdl.displayPref.splice(0, 0, new dslBase.DisplayUnit(".", DISPLAY_TYPE.L_SEPARATOR));
+        return mdl;
+    };
     this.createAssignment = function () {
-        var descr = new dslBase.Descriptor(dslBase.ELEM_TYPE.ASSIGNMENT);
-        descr.displayInf = [new dslBase.DisplayUnit(" = ", DISPLAY_TYPE.L_TOKEN)];
-        descr.tokenClazz = DISPLAY_TYPE.L_TOKEN;
+        // define how to display an assignment
+        var displ = {displayInf: [new dslBase.DisplayUnit(" = ", DISPLAY_TYPE.L_TOKEN)]};
+        var descr = helper.createAssignment(displ, DISPLAY_TYPE.L_TOKEN);
         return descr;
     };
     var createLiteral = function () {
@@ -102,6 +125,13 @@ var JC_DomainQueryModel = function (domModel) {
         descr.tokenClazz = DISPLAY_TYPE.L_TOKEN;
         return descr;
     };
+    
+    var literalOrDom = helper.createPreselect([helper.createChoice("Insert a Literal", createLiteral),
+                                              helper.createChoice("Select from Matches", matches_navigateFields)]);
+
+    var booleanOPs = new dslBase.Descriptor(dslBase.ELEM_TYPE.LANG_ELEM).
+    jc__addElement("EQUALS", createModelElemDotSep("EQUALS", [literalOrDom])).
+    jc__addElement("GT", createModelElemDotSep("GT", [literalOrDom]));
 
     /***************************************************/
     this.getFirstLine = function () {
@@ -109,8 +139,7 @@ var JC_DomainQueryModel = function (domModel) {
             firstLine = new dslBase.ModelElement(null);
             firstLine.children = [
                 new dslBase.Descriptor(dslBase.ELEM_TYPE.LANG_ELEM, false).
-
-                jc__addElement("createMatch", createModelElemAss("createMatch", getDomainTypesAsChild))
+                jc__addElement("createMatch", createModelElemAss("createMatch", [getDomainTypes], null, returnFirstChildResult))
             ];
         }
         return firstLine;
@@ -122,9 +151,8 @@ var JC_DomainQueryModel = function (domModel) {
             followLine = new dslBase.ModelElement(null);
             followLine.children = [
                 new dslBase.Descriptor(dslBase.ELEM_TYPE.LANG_ELEM, false).
-
-                jc__addElement("createMatch", createModelElemAss("createMatch", getDomainTypesAsChild)).
-                jc__addElement("WHERE", createModelElem("WHERE"))
+                jc__addElement("createMatch", createModelElemAss("createMatch", [getDomainTypes], null, returnFirstChildResult)).
+                jc__addElement("WHERE", createModelElem("WHERE", [matches_navigateFields], booleanOPs))
             ];
         }
         return followLine;
